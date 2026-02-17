@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BloodConnect - User Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#d41111",
+                "background-light": "#f8f6f6",
+                "background-dark": "#221010",
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+        /* Custom iOS-like toggle switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #d41111;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #d41111;
+        }
+        /* Hide scrollbar for clean look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased selection:bg-primary/20">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-zinc-900 shadow-2xl">
+<!-- Header / Navigation -->
+<div class="sticky top-0 z-20 flex items-center justify-between bg-white/80 dark:bg-zinc-900/80 px-4 pt-12 pb-4 backdrop-blur-md border-b border-slate-100 dark:border-zinc-800">
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h1 class="text-base font-semibold tracking-wide text-slate-900 dark:text-white">Profile &amp; Settings</h1>
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-primary font-medium text-sm">
+                Edit
+            </button>
+</div>
+<!-- Main Content Scroll Area -->
+<div class="flex-1 overflow-y-auto no-scrollbar pb-24">
+<!-- User Profile Section -->
+<div class="flex flex-col items-center px-6 py-8">
+<div class="relative mb-4 group cursor-pointer">
+<div class="h-28 w-28 rounded-full border-4 border-slate-50 dark:border-zinc-800 shadow-lg overflow-hidden relative">
+<img alt="Profile picture of Sarah Jenkins" class="h-full w-full object-cover" data-alt="Professional woman portrait smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCzk1rVFKOphln0GQSWaSm6fuUGOCO25ezbn3CyvxDqpSqsmuDAa_rfwWWEtdHUGro9YOYrmhK_W9qvHIKcswnOumPXDdxhtLN1UEgdtNhhA0q10qAGwv9vpJt5IGUWaNXU6Hv8FQvh3CReCCIG8slr0syJoy2B2B98erPDNo0YL2eSpCgjRsHT3jRnw7b3lZWQWqGbaectOFqUZaMdQ0fVPfeql0XhQoW-mtUVbHDRxrkKdEqDhQYxlvtO63onL_irY-qLRao10-d"/>
+</div>
+<div class="absolute bottom-1 right-1 bg-primary text-white rounded-full p-1.5 border-2 border-white dark:border-zinc-900 shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-size: 16px;">camera_alt</span>
+</div>
+</div>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white mb-1">Sarah Jenkins</h2>
+<div class="flex items-center gap-2 mb-3">
+<span class="px-3 py-1 bg-primary/10 dark:bg-primary/20 text-primary text-[10px] font-bold tracking-wider uppercase rounded-full">
+                        Regional Manager
+                    </span>
+</div>
+<div class="flex flex-col items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 16px;">location_on</span>
+<span>New York, NY</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 16px;">mail</span>
+<span>sarah.j@bloodconnect.org</span>
+</div>
+</div>
+</div>
+<!-- Availability Status Card -->
+<div class="px-4 mb-6">
+<div class="bg-background-light dark:bg-zinc-800/50 rounded-xl p-4 border border-slate-100 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+<div class="flex items-start gap-3">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/20 text-primary">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-slate-900 dark:text-white">Emergency Availability</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Receive urgent donation requests</p>
+</div>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<!-- Settings Group -->
+<div class="px-4 mb-8">
+<h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 ml-2">Preferences</h3>
+<div class="bg-white dark:bg-zinc-800/40 rounded-xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
+<!-- Schedule Item -->
+<a class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors border-b border-slate-100 dark:border-zinc-800 last:border-0 group" href="#">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">calendar_month</span>
+</div>
+<span class="text-sm font-medium text-slate-900 dark:text-white">My Schedule</span>
+</div>
+<span class="material-symbols-outlined text-slate-300 dark:text-zinc-600" style="font-size: 20px;">chevron_right</span>
+</a>
+<!-- Theme Toggle Item -->
+<div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-zinc-800 last:border-0">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined" style="font-size: 20px;">dark_mode</span>
+</div>
+<span class="text-sm font-medium text-slate-900 dark:text-white">Dark Mode</span>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-slate-300 dark:peer-focus:ring-slate-800 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-slate-800"></div>
+</label>
+</div>
+<!-- Notifications Item -->
+<a class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">notifications</span>
+</div>
+<span class="text-sm font-medium text-slate-900 dark:text-white">Notifications</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-primary"></span>
+<span class="material-symbols-outlined text-slate-300 dark:text-zinc-600" style="font-size: 20px;">chevron_right</span>
+</div>
+</a>
+</div>
+</div>
+<!-- Account Actions Group -->
+<div class="px-4 mb-8">
+<h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 ml-2">Account</h3>
+<div class="bg-white dark:bg-zinc-800/40 rounded-xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
+<!-- Password & Security -->
+<a class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors border-b border-slate-100 dark:border-zinc-800 last:border-0 group" href="#">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">lock</span>
+</div>
+<span class="text-sm font-medium text-slate-900 dark:text-white">Security</span>
+</div>
+<span class="material-symbols-outlined text-slate-300 dark:text-zinc-600" style="font-size: 20px;">chevron_right</span>
+</a>
+<!-- Logout Item -->
+<button class="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group text-left">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 dark:bg-red-900/20 text-primary group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+</div>
+<span class="text-sm font-medium text-primary">Log Out</span>
+</div>
+</button>
+</div>
+</div>
+<div class="px-6 text-center pb-8">
+<p class="text-xs text-slate-400">Version 2.4.0 (Build 184)</p>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Sticky) -->
+<div class="flex gap-2 border-t border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 pb-6 pt-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-30">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">home</span>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">group</span>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Donors</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">bloodtype</span>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Requests</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-current" style="font-size: 24px; font-variation-settings: 'FILL' 1;">person</span>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Profile</p>
+</a>
+</div>
+</div>
+</body></html>

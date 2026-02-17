@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BloodConnect - System Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#cc2424",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#201212",
+                        "surface-dark": "#2a1a1a",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #452727;
+            border-radius: 4px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-screen w-full flex-col overflow-hidden mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Header -->
+<header class="flex items-center justify-between px-4 py-4 bg-background-light dark:bg-background-dark z-10 sticky top-0 border-b border-primary/10 dark:border-primary/10">
+<h1 class="text-2xl font-bold tracking-tight">Notifications</h1>
+<button class="text-primary text-sm font-semibold hover:text-red-400 transition-colors">
+                Mark all as read
+            </button>
+</header>
+<!-- Filter Chips (Horizontal Scroll) -->
+<div class="flex gap-2 px-4 py-3 overflow-x-auto no-scrollbar border-b border-primary/5 dark:border-primary/5 bg-surface-light/50 dark:bg-surface-dark/30 backdrop-blur-sm shrink-0">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-4 shadow-sm shadow-primary/20">
+<span class="text-white text-xs font-semibold">All</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/20 px-4 hover:bg-primary/5 transition-colors">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">Helpline</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/20 px-4 hover:bg-primary/5 transition-colors">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">Escalations</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-primary/20 px-4 hover:bg-primary/5 transition-colors">
+<span class="text-slate-600 dark:text-slate-300 text-xs font-medium">Reimbursements</span>
+</button>
+</div>
+<!-- Pull to refresh indicator (Visual only) -->
+<div class="flex justify-center py-2 opacity-0 -mt-8">
+<span class="material-symbols-outlined animate-spin text-primary">refresh</span>
+</div>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto overflow-x-hidden pb-20">
+<!-- Section: Today -->
+<div class="px-4 pt-4 pb-2">
+<h2 class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-3 pl-1">Today</h2>
+<!-- Card: Unread Escalation -->
+<div class="group relative flex gap-4 p-4 mb-3 rounded-xl bg-white dark:bg-surface-dark border-l-4 border-primary shadow-sm hover:shadow-md transition-all active:scale-[0.99] cursor-pointer">
+<div class="absolute right-3 top-3 w-2 h-2 rounded-full bg-primary"></div>
+<div class="shrink-0">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug pr-4">Urgent: Blood request #4029 unfulfilled</h3>
+<span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">2m ago</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                            Sector 4 - B+ Positive needed immediately for trauma case at City Hospital. Please prioritize.
+                        </p>
+<div class="mt-2 flex gap-2">
+<span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-2 py-1 text-[10px] font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-600/10 dark:ring-red-400/20">Escalation</span>
+<span class="inline-flex items-center rounded-md bg-slate-50 dark:bg-slate-800 px-2 py-1 text-[10px] font-medium text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-slate-500/10">B+ Positive</span>
+</div>
+</div>
+</div>
+<!-- Card: Unread Helpline -->
+<div class="group relative flex gap-4 p-4 mb-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-100 dark:border-primary/10 shadow-sm hover:shadow-md transition-all active:scale-[0.99] cursor-pointer">
+<div class="absolute right-3 top-3 w-2 h-2 rounded-full bg-primary"></div>
+<div class="shrink-0">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug pr-4">Incoming Assignment: Caller #8821</h3>
+<span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">15m ago</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                            New caller assigned to your queue. Requesting information about platelet donation eligibility.
+                        </p>
+</div>
+</div>
+<!-- Card: Read Reimbursement -->
+<div class="group relative flex gap-4 p-4 mb-3 rounded-xl bg-slate-50 dark:bg-surface-dark/40 border border-transparent dark:border-white/5 shadow-none transition-all active:scale-[0.99] cursor-pointer">
+<div class="shrink-0">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-snug pr-4">Reimbursement Approved</h3>
+<span class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">1h ago</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            Your travel expense claim for June 12 (Metro travel) has been processed and approved.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Section: Yesterday -->
+<div class="px-4 pt-2 pb-2">
+<h2 class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-3 pl-1">Yesterday</h2>
+<!-- Card: Read Announcement -->
+<div class="group relative flex gap-4 p-4 mb-3 rounded-xl bg-slate-50 dark:bg-surface-dark/40 border border-transparent dark:border-white/5 shadow-none transition-all active:scale-[0.99] cursor-pointer">
+<div class="shrink-0">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">campaign</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-snug pr-4">Donation Camp Success</h3>
+<span class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">Yesterday</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            Great work team! We collected 45 units at the Rajiv Chowk camp. Photos have been uploaded to the portal.
+                        </p>
+</div>
+</div>
+<!-- Card: Read Helpline -->
+<div class="group relative flex gap-4 p-4 mb-3 rounded-xl bg-slate-50 dark:bg-surface-dark/40 border border-transparent dark:border-white/5 shadow-none transition-all active:scale-[0.99] cursor-pointer">
+<div class="shrink-0">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">call_missed</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col gap-1">
+<div class="flex justify-between items-start">
+<h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-snug pr-4">Missed Call Follow-up</h3>
+<span class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">Yesterday</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            System auto-assigned ticket #9901 for a missed call during off-hours.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Empty State Illustration Placeholder (Hidden by default, shown if no notifications) -->
+<!-- 
+            <div class="flex flex-col items-center justify-center py-20 px-6 text-center opacity-50">
+                 <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                    <span class="material-symbols-outlined text-4xl text-primary">check_circle</span>
+                 </div>
+                 <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">All caught up!</h3>
+                 <p class="text-sm text-slate-500 dark:text-slate-400">You have no new notifications at the moment.</p>
+            </div>
+            -->
+<div class="h-10 w-full"></div> <!-- Spacer for bottom nav -->
+</main>
+<!-- Bottom Navigation -->
+<div class="flex gap-2 border-t border-slate-200 dark:border-primary/20 bg-white dark:bg-surface-dark px-4 pb-6 pt-2 z-20 absolute bottom-0 w-full">
+<a class="just flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary dark:text-[#c49797] dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Dashboard</p>
+</a>
+<a class="just flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary dark:text-[#c49797] dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">water_drop</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Requests</p>
+</a>
+<a class="just flex flex-1 flex-col items-center justify-end gap-1 text-primary dark:text-white" href="#">
+<span class="material-symbols-outlined text-[24px] font-variation-settings-'FILL'1">notifications</span>
+<p class="text-xs font-bold leading-normal tracking-[0.015em]">Notifications</p>
+</a>
+<a class="just flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary dark:text-[#c49797] dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-xs font-medium leading-normal tracking-[0.015em]">Profile</p>
+</a>
+</div>
+</div>
+<!-- Background texture/noise for depth (optional) -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] z-0" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+</body></html>

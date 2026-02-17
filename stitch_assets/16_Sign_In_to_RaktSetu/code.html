@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RaktSetu Sign In</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c72929",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#201212",
+                        "surface-dark": "#2a1a1a",
+                        "input-bg": "#301c1c",
+                        "input-border": "#603939",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem", 
+                        "lg": "0.75rem", 
+                        "xl": "1rem", 
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #301c1c inset !important;
+            -webkit-text-fill-color: white !important;
+        }::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-center font-display text-slate-900 dark:text-white selection:bg-primary/30">
+<div class="w-full max-w-md h-full min-h-screen relative flex flex-col p-6 overflow-y-auto">
+<div class="flex-1 flex flex-col justify-end pb-6">
+<div class="w-full aspect-[2/1] bg-center bg-no-repeat bg-cover rounded-xl overflow-hidden mb-6 relative shadow-2xl shadow-black/20" data-alt="Abstract red blood cells connection network graphic" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBFzOzck32CMcFhAEIIZz4pWUYzPPcNiD0yDEiylHiPhngfttcw1YMYq1BcsStKY7FCn_rROgShcM6zntSUbVppkwrVEL_Ayo4JdEoIiqaQrXiKJVOzc5dB3nsajzCnsncCMpxHpqCeZWMmHanG9QYgexs1KhsIO3_hs6BxuSPGeNJQ5m19NiYnMy7n2rKv-XxcnBs2CvJj3P7xVj1uMRwB8NpHjRqrvSv_0Ed_KbZSeR5-k7IrY3tnEHwzTm-4cjw7XVlaU5WdRBKB");'>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent"></div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<div class="bg-primary h-10 w-10 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-2xl">bloodtype</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-white">RaktSetu</h1>
+</div>
+<p class="text-gray-400 font-medium tracking-wide text-sm pl-1">Bridging Lives Through Technology</p>
+</div>
+</div>
+<div class="mb-6 bg-input-bg p-1 rounded-xl flex items-center border border-input-border/50">
+<button class="flex-1 py-2 text-sm font-semibold rounded-lg bg-primary text-white shadow-sm transition-all" onclick="document.getElementById('email-input-group').classList.remove('hidden'); document.getElementById('phone-input-group').classList.add('hidden'); this.classList.add('bg-primary', 'text-white'); this.nextElementSibling.classList.remove('bg-primary', 'text-white'); this.nextElementSibling.classList.add('text-gray-400', 'hover:text-white');">
+                Email
+            </button>
+<button class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-400 hover:text-white transition-all" onclick="document.getElementById('email-input-group').classList.add('hidden'); document.getElementById('phone-input-group').classList.remove('hidden'); this.classList.add('bg-primary', 'text-white'); this.previousElementSibling.classList.remove('bg-primary', 'text-white'); this.previousElementSibling.classList.add('text-gray-400', 'hover:text-white');">
+                Phone
+            </button>
+</div>
+<form class="flex-none flex flex-col gap-5 w-full pb-8" onsubmit="event.preventDefault(); document.getElementById('loading-spinner').classList.remove('hidden'); document.getElementById('btn-text').classList.add('hidden');">
+<div class="hidden bg-red-900/20 border border-red-900/50 rounded-lg p-3 flex items-start gap-3">
+<span class="material-symbols-outlined text-red-400 text-sm mt-0.5">error</span>
+<p class="text-red-300 text-xs leading-relaxed">Incorrect email or password. Please try again.</p>
+</div>
+<div class="space-y-1.5" id="email-input-group">
+<label class="block text-sm font-medium text-gray-300 ml-1" for="email">Email Address</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 group-focus-within:text-primary transition-colors">mail</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-4 bg-input-bg border border-input-border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm" id="email" name="email" placeholder="volunteer@bloodconnect.org" type="email"/>
+</div>
+</div>
+<div class="space-y-1.5 hidden" id="phone-input-group">
+<label class="block text-sm font-medium text-gray-300 ml-1" for="phone">Phone Number</label>
+<div class="flex gap-2">
+<div class="relative w-1/4">
+<select class="block w-full h-full pl-3 pr-8 py-4 bg-input-bg border border-input-border rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm">
+<option>+91</option>
+<option>+1</option>
+<option>+44</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 text-sm">expand_more</span>
+</div>
+</div>
+<div class="relative group w-3/4">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 group-focus-within:text-primary transition-colors">call</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-4 bg-input-bg border border-input-border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm" id="phone" name="phone" placeholder="98765 43210" type="tel"/>
+</div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between items-center ml-1">
+<label class="block text-sm font-medium text-gray-300" for="password">Password</label>
+<a class="text-xs font-medium text-primary hover:text-red-400 transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 group-focus-within:text-primary transition-colors">lock</span>
+</div>
+<input class="block w-full pl-11 pr-12 py-4 bg-input-bg border border-input-border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-white transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</div>
+<button class="mt-2 w-full flex items-center justify-center bg-primary hover:bg-red-700 text-white font-semibold py-4 px-4 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group" type="submit">
+<span id="btn-text">Sign In</span>
+<svg class="hidden spinner h-5 w-5 text-white" fill="none" id="loading-spinner" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+</button>
+<div class="pt-2">
+<div class="flex items-center gap-2 mb-2">
+<span class="h-px bg-input-border flex-1"></span>
+<span class="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Select Role (Dev)</span>
+<span class="h-px bg-input-border flex-1"></span>
+</div>
+<div class="relative">
+<select class="block w-full pl-4 pr-10 py-3 bg-input-bg/50 border border-input-border border-dashed rounded-lg text-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none cursor-pointer hover:bg-input-bg hover:text-white">
+<option value="volunteer">VOLUNTEER</option>
+<option value="admin">ADMIN</option>
+<option value="manager">MANAGER</option>
+<option value="hr">HR</option>
+<option value="helpline">HELPLINE</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 text-sm">badge</span>
+</div>
+</div>
+</div>
+</form>
+<div class="pb-6 text-center">
+<p class="text-sm text-gray-500">
+                Don't have an account? 
+                <a class="text-gray-300 font-medium hover:text-primary transition-colors underline decoration-gray-600 underline-offset-4" href="#">Contact Admin</a>
+</p>
+</div>
+</div>
+
+</body></html>

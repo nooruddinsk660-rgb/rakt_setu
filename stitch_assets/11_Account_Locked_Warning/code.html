@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Account Locked Warning</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#de1212",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221010",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen flex flex-col items-center justify-center p-6 antialiased selection:bg-primary/30">
+<!-- Top Status Bar Simulation (iOS style) -->
+<div class="fixed top-0 w-full flex justify-between px-6 py-2 text-xs font-medium text-gray-900 dark:text-gray-400 z-50 pointer-events-none">
+<span>9:41</span>
+<div class="flex gap-2 items-center">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[16px]">battery_full</span>
+</div>
+</div>
+<!-- Main Content Container -->
+<div class="w-full max-w-sm flex flex-col items-center justify-center flex-grow pt-10 pb-6 relative z-10">
+<!-- Animated Pulse Background for the Icon -->
+<div class="relative flex items-center justify-center mb-8">
+<div class="absolute w-32 h-32 bg-primary/20 rounded-full animate-pulse"></div>
+<div class="absolute w-24 h-24 bg-primary/30 rounded-full"></div>
+<!-- Security Icon -->
+<div class="relative z-10 flex items-center justify-center w-20 h-20 bg-background-light dark:bg-[#331818] rounded-full border-4 border-background-light dark:border-background-dark shadow-2xl">
+<span class="material-symbols-outlined text-5xl text-primary">lock</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="text-center space-y-4 mb-10">
+<h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                Account Locked
+            </h1>
+<div class="space-y-3 px-2">
+<p class="text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                    For your security, access to the BloodConnect Command Center has been suspended due to multiple failed login attempts.
+                </p>
+<!-- Timer / Details Box -->
+<div class="mt-4 p-4 rounded-xl bg-gray-100 dark:bg-[#331818] border border-gray-200 dark:border-primary/20">
+<div class="flex items-center justify-center gap-2 text-sm font-semibold text-primary mb-1">
+<span class="material-symbols-outlined text-lg">timer</span>
+<span>Try again in 14:32</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400">
+                        Please wait for the timer to expire or contact your system administrator.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full space-y-3 mt-auto">
+<button class="w-full group relative flex items-center justify-center gap-3 bg-primary hover:bg-red-700 text-white font-bold h-14 px-6 rounded-lg transition-all duration-200 shadow-lg shadow-primary/20 active:scale-[0.98]">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span>Contact Administrator</span>
+</button>
+<button class="w-full flex items-center justify-center gap-2 bg-transparent hover:bg-gray-100 dark:hover:bg-[#331818] text-gray-600 dark:text-gray-400 font-semibold h-12 px-6 rounded-lg transition-colors duration-200 active:scale-[0.98]">
+<span>Logout</span>
+</button>
+</div>
+<!-- Footer ID -->
+<div class="mt-8 text-center">
+<p class="text-[10px] text-gray-400 dark:text-gray-600 font-mono tracking-widest uppercase">
+                ID: 8F-2910-LOCKED
+            </p>
+</div>
+</div>
+<!-- Bottom Indicator for iPhone -->
+<div class="fixed bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gray-300 dark:bg-gray-700 rounded-full z-50"></div>
+</body></html>

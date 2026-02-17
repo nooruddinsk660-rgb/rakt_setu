@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manager Operations Hub</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c72929",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#201212",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-50 overflow-hidden h-screen w-full flex flex-col">
+<!-- Main Content Area (Scrollable) -->
+<main class="flex-1 overflow-y-auto no-scrollbar pb-24 relative">
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-[#382323] px-5 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="h-10 w-10 rounded-full bg-cover bg-center border-2 border-primary/30" data-alt="Portrait of the manager" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAi3X1SujkZ2aWiJ4kZ4D3DLVqtIC40NKhEe9HX1KMW8Um1KqR_nm_ZrTT0lFDHJ4LtNSy5Va4YprE5KveGaDx1YvJ4nj8AYv9tSNaQQG8B2PMuxaMIrQrc7uAwx4bAEFvcJThDqX1vsOv_SlLSlTGwbKO9YIE_NcxsFjcnkjKmBbSq5lZIXAxi6DGFexza2OIDZcEzJlkLDrdOSGHLwhmdNUWKvabIbbpERODxd-lCeVHE25cggndWmdGEWnonCHMYGW6sG0s0hrgF');"></div>
+<div>
+<p class="text-xs text-slate-500 dark:text-[#c39898] font-medium uppercase tracking-wider">Manager</p>
+<h1 class="text-lg font-bold leading-tight">Rahul Sharma</h1>
+</div>
+</div>
+<button class="relative p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-[#e8dada]">notifications</span>
+<span class="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background-light dark:ring-background-dark animate-pulse"></span>
+</button>
+</header>
+<!-- Dashboard Content -->
+<div class="px-5 pt-6 pb-4">
+<!-- Welcome/Status -->
+<div class="mb-6">
+<h2 class="text-2xl font-bold tracking-tight mb-1">Overview</h2>
+<p class="text-slate-500 dark:text-[#a68a8a] text-sm">Operations status for <span class="text-primary font-semibold">Oct 24, 2023</span></p>
+</div>
+<!-- Metrics Cards Grid -->
+<div class="grid grid-cols-2 gap-3 mb-8">
+<!-- Card 1: Assigned Camps -->
+<div class="col-span-2 sm:col-span-1 bg-white dark:bg-[#2a1a1a] p-5 rounded-xl border border-gray-100 dark:border-[#432828] shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">camping</span>
+</div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">camping</span>
+</div>
+<span class="bg-green-500/10 text-green-600 dark:text-green-400 text-xs px-2 py-1 rounded-full font-medium border border-green-500/20">+1 Today</span>
+</div>
+<div class="relative z-10">
+<p class="text-sm font-medium text-slate-500 dark:text-[#c39898] mb-1">Assigned Camps</p>
+<h3 class="text-3xl font-bold text-slate-900 dark:text-white">3 <span class="text-base font-normal text-slate-400 dark:text-[#8a7070]">Active</span></h3>
+</div>
+</div>
+<!-- Card 2: Pending Workflow -->
+<div class="bg-white dark:bg-[#2a1a1a] p-5 rounded-xl border border-gray-100 dark:border-[#432828] shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-orange-500">pending_actions</span>
+</div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-2 bg-orange-500/10 rounded-lg text-orange-500">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+</div>
+<div class="relative z-10">
+<p class="text-sm font-medium text-slate-500 dark:text-[#c39898] mb-1">Workflow</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white">12 <span class="text-xs font-medium bg-primary/20 text-primary px-1.5 py-0.5 rounded ml-1 align-middle">Urgent</span></h3>
+</div>
+</div>
+<!-- Card 3: Reimbursements -->
+<div class="bg-white dark:bg-[#2a1a1a] p-5 rounded-xl border border-gray-100 dark:border-[#432828] shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-blue-500">payments</span>
+</div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+<span class="material-symbols-outlined">payments</span>
+</div>
+</div>
+<div class="relative z-10">
+<p class="text-sm font-medium text-slate-500 dark:text-[#c39898] mb-1">Pending Pay</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white">₹ 4.5k</h3>
+</div>
+</div>
+</div>
+<!-- Quick Actions Section -->
+<div class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold">Quick Actions</h3>
+</div>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+<button class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="h-14 w-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-white text-2xl">add</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-[#c39898]">New Camp</span>
+</button>
+<button class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="h-14 w-14 rounded-full bg-white dark:bg-[#2a1a1a] border border-gray-200 dark:border-[#432828] flex items-center justify-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-slate-700 dark:text-white text-2xl">inventory_2</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-[#c39898]">Inventory</span>
+</button>
+<button class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="h-14 w-14 rounded-full bg-white dark:bg-[#2a1a1a] border border-gray-200 dark:border-[#432828] flex items-center justify-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-slate-700 dark:text-white text-2xl">group_add</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-[#c39898]">Volunteer</span>
+</button>
+<button class="flex flex-col items-center gap-2 min-w-[80px]">
+<div class="h-14 w-14 rounded-full bg-white dark:bg-[#2a1a1a] border border-gray-200 dark:border-[#432828] flex items-center justify-center shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-slate-700 dark:text-white text-2xl">description</span>
+</div>
+<span class="text-xs font-medium text-slate-600 dark:text-[#c39898]">Report</span>
+</button>
+</div>
+</div>
+<!-- Recent Activity List -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold">Recent Activity</h3>
+<a class="text-sm font-medium text-primary hover:text-primary/80" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Activity Item 1 -->
+<div class="flex gap-4 p-4 rounded-xl bg-white dark:bg-[#2a1a1a] border border-gray-100 dark:border-[#382323]">
+<div class="relative">
+<div class="h-10 w-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</div>
+<div class="absolute h-full w-[1px] bg-gray-200 dark:bg-[#382323] left-1/2 -bottom-8 -z-10"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Camp #102 Completed</h4>
+<span class="text-xs text-slate-400 dark:text-[#8a7070]">10m</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-[#a68a8a] mt-1 line-clamp-1">Rohini Sector 14 drive marked as success. 45 units collected.</p>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex gap-4 p-4 rounded-xl bg-white dark:bg-[#2a1a1a] border border-gray-100 dark:border-[#382323]">
+<div class="relative">
+<div class="h-10 w-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-xl">receipt_long</span>
+</div>
+<div class="absolute h-full w-[1px] bg-gray-200 dark:bg-[#382323] left-1/2 -bottom-8 -z-10"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Reimbursement Request</h4>
+<span class="text-xs text-slate-400 dark:text-[#8a7070]">1h</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-[#a68a8a] mt-1 line-clamp-1">Volunteer Amit requested ₹350 for travel.</p>
+<div class="flex gap-2 mt-3">
+<button class="text-xs bg-primary text-white px-3 py-1.5 rounded font-medium">Approve</button>
+<button class="text-xs bg-transparent border border-gray-300 dark:border-[#432828] text-slate-600 dark:text-[#c39898] px-3 py-1.5 rounded font-medium">Decline</button>
+</div>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="flex gap-4 p-4 rounded-xl bg-white dark:bg-[#2a1a1a] border border-gray-100 dark:border-[#382323]">
+<div class="relative">
+<div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl">warning</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Low Inventory Alert</h4>
+<span class="text-xs text-slate-400 dark:text-[#8a7070]">2h</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-[#a68a8a] mt-1 line-clamp-1">Refreshment kits (Type B) running low at Warehouse 2.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom spacer for FAB -->
+<div class="h-16"></div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-30 border-t border-gray-200 dark:border-[#432828] bg-white dark:bg-[#301c1c] pb-safe pt-2">
+<div class="flex justify-around items-end px-2 pb-3">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary group" href="#">
+<div class="flex h-7 items-center justify-center rounded-full px-4 group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;">dashboard</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Hub</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-[#c39898] hover:text-slate-600 dark:hover:text-[#e0b0b0] transition-colors group" href="#">
+<div class="flex h-7 items-center justify-center rounded-full px-4 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">camping</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Camps</p>
+</a>
+<!-- Center Action Button Placeholder (Visual balance) -->
+<div class="w-12"></div>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-[#c39898] hover:text-slate-600 dark:hover:text-[#e0b0b0] transition-colors group" href="#">
+<div class="flex h-7 items-center justify-center rounded-full px-4 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">assignment</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Requests</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-[#c39898] hover:text-slate-600 dark:hover:text-[#e0b0b0] transition-colors group" href="#">
+<div class="flex h-7 items-center justify-center rounded-full px-4 group-hover:bg-black/5 dark:group-hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">person</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Profile</p>
+</a>
+</div>
+</nav>
+<!-- Floating Action Button (Center Docked) -->
+<div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+<button class="h-14 w-14 rounded-full bg-primary text-white shadow-lg shadow-primary/40 flex items-center justify-center border-4 border-white dark:border-[#201313] active:scale-95 transition-all hover:bg-red-700">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+</body></html>

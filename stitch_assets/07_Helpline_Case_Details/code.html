@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Helpline Case Details - BloodConnect</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c72929",
+                        "primary-dark": "#a01f1f",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#201212",
+                        "surface-dark": "#2c1a1a",
+                        "surface-highlight": "#3d2424",
+                        "text-secondary": "#c39898",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Custom scrollbar for timeline if needed */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #201212;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3d2424;
+            border-radius: 4px;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-white">
+    <!-- Top Navigation Bar -->
+    <header
+        class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-primary/10 px-4 py-3 flex items-center justify-between">
+        <button
+            class="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-white">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Case #BC-4921</h1>
+        <button
+            class="flex items-center justify-center p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-white">
+            <span class="material-symbols-outlined">more_vert</span>
+        </button>
+    </header>
+    <!-- Main Content Scroll Area -->
+    <main class="flex-1 overflow-y-auto pb-24">
+        <!-- Urgency & Status Header -->
+        <div class="p-4">
+            <div class="relative overflow-hidden rounded-2xl bg-surface-dark border border-primary/20 shadow-lg">
+                <!-- Decorative background accent -->
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl"></div>
+                <div class="p-5 flex flex-col gap-4 relative z-10">
+                    <div class="flex justify-between items-start">
+                        <div class="flex flex-col gap-1">
+                            <div class="flex items-center gap-2">
+                                <span class="animate-pulse w-2 h-2 rounded-full bg-primary"></span>
+                                <span class="text-primary text-xs font-bold uppercase tracking-wider">Critical
+                                    Urgency</span>
+                            </div>
+                            <h2 class="text-2xl font-bold text-white leading-tight">Blood Needed</h2>
+                            <p class="text-text-secondary text-sm">Request ID: #BC-4921</p>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <div
+                                class="h-14 w-14 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                                <span class="text-white text-xl font-bold">O-ve</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-px w-full bg-primary/10"></div>
+                    <div class="flex gap-3">
+                        <button
+                            class="flex-1 h-10 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg flex items-center justify-center gap-2 text-white text-sm font-medium transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">call</span>
+                            Call Patient
+                        </button>
+                        <button
+                            class="flex-1 h-10 bg-primary hover:bg-primary-dark rounded-lg flex items-center justify-center gap-2 text-white text-sm font-medium shadow-md shadow-primary/20 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">share</span>
+                            Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Request Timeline -->
+        <section class="px-4 pb-6">
+            <h3 class="text-white text-base font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">history</span>
+                Request Timeline
+            </h3>
+            <div class="bg-surface-dark rounded-xl p-5 border border-primary/10 shadow-sm">
+                <!-- Step 1: Created -->
+                <div class="grid grid-cols-[32px_1fr] gap-x-3">
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30 text-green-500">
+                            <span class="material-symbols-outlined text-[18px]">check</span>
+                        </div>
+                        <div class="w-[2px] bg-green-500/30 h-full min-h-[40px]"></div>
+                    </div>
+                    <div class="pb-6">
+                        <p class="text-white text-sm font-semibold">Request Created</p>
+                        <p class="text-text-secondary text-xs mt-0.5">Jan 12, 10:30 AM</p>
+                    </div>
+                </div>
+                <!-- Step 2: Assigned -->
+                <div class="grid grid-cols-[32px_1fr] gap-x-3">
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/30 text-green-500">
+                            <span class="material-symbols-outlined text-[18px]">check</span>
+                        </div>
+                        <div class="w-[2px] bg-primary/40 h-full min-h-[40px]"></div>
+                    </div>
+                    <div class="pb-6">
+                        <p class="text-white text-sm font-semibold">Volunteer Assigned</p>
+                        <div class="flex items-center gap-2 mt-1.5 p-2 bg-surface-highlight rounded-lg w-fit pr-3">
+                            <div
+                                class="w-6 h-6 rounded-full bg-purple-500/30 flex items-center justify-center text-xs font-bold text-purple-200">
+                                PM</div>
+                            <span class="text-xs text-white">Priya M.</span>
+                        </div>
+                        <p class="text-text-secondary text-xs mt-1">Jan 12, 10:45 AM</p>
+                    </div>
+                </div>
+                <!-- Step 3: First Response (Active) -->
+                <div class="grid grid-cols-[32px_1fr] gap-x-3">
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary text-primary shadow-[0_0_10px_rgba(199,41,41,0.3)] animate-pulse">
+                            <span class="material-symbols-outlined text-[18px]">emergency_home</span>
+                        </div>
+                        <div class="w-[2px] bg-white/10 h-full min-h-[40px]"></div>
+                    </div>
+                    <div class="pb-6">
+                        <p class="text-white text-sm font-semibold">First Response</p>
+                        <p class="text-primary text-xs mt-0.5 font-medium">Pending Update...</p>
+                    </div>
+                </div>
+                <!-- Step 4: Closed -->
+                <div class="grid grid-cols-[32px_1fr] gap-x-3">
+                    <div class="flex flex-col items-center">
+                        <div
+                            class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-text-secondary">
+                            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                        </div>
+                    </div>
+                    <div class="pt-1">
+                        <p class="text-text-secondary text-sm font-medium">Case Closed</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Patient & Hospital Details -->
+        <section class="px-4 pb-6">
+            <h3 class="text-white text-base font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">person</span>
+                Patient Details
+            </h3>
+            <div class="bg-surface-dark rounded-xl border border-primary/10 overflow-hidden">
+                <!-- Patient Info Row -->
+                <div class="p-4 flex gap-4 border-b border-primary/10">
+                    <div
+                        class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-white font-bold text-lg border border-white/10">
+                        RS
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-white font-semibold">Rahul Sharma</h4>
+                        <p class="text-text-secondary text-sm">Male, 34 Years</p>
+                    </div>
+                </div>
+                <!-- Hospital Location Map Preview -->
+                <div class="h-32 w-full bg-gray-800 relative group cursor-pointer"
+                    data-alt="Dark stylized map showing AIIMS Delhi location" data-location="New Delhi" style="">
+                    <div
+                        class="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/77.2090,28.5672,14,0/600x300?access_token=YOUR_ACCESS_TOKEN')] bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity">
+                    </div>
+                    <!-- Fallback gradient if image fails/placeholder -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-surface-dark"></div>
+                    <div class="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                        <div>
+                            <p class="text-white font-bold text-sm drop-shadow-md">AIIMS Delhi</p>
+                            <p class="text-gray-300 text-xs drop-shadow-md">Ward 4, Bed 12</p>
+                        </div>
+                        <button
+                            class="bg-primary hover:bg-primary-dark text-white p-2 rounded-lg shadow-lg transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">near_me</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 grid grid-cols-2 gap-3">
+                    <div class="bg-surface-highlight p-3 rounded-lg">
+                        <p class="text-text-secondary text-xs mb-1">Attendant Name</p>
+                        <p class="text-white text-sm font-medium">Suresh Kumar</p>
+                    </div>
+                    <div class="bg-surface-highlight p-3 rounded-lg">
+                        <p class="text-text-secondary text-xs mb-1">Contact</p>
+                        <p class="text-white text-sm font-medium">+91 98765 43210</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Volunteer Section -->
+        <section class="px-4 pb-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-white text-base font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-xl">volunteer_activism</span>
+                    Assigned Volunteer
+                </h3>
+                <button
+                    class="text-primary text-xs font-semibold uppercase hover:text-primary-dark transition-colors">Reassign</button>
+            </div>
+            <div class="bg-surface-dark rounded-xl p-4 border border-primary/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img alt="Volunteer Priya M." class="w-10 h-10 rounded-full border border-white/10"
+                        data-alt="Portrait of volunteer Priya"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKyf4JSmZQDX1JLZBpffzNRLOfGEFgKtRjSOfTVqbY0SYhyZKl1__U96SjIWMKkaZ7NaoZ9lnB7exNygyCX7U5AaY1OQymS6uvL3BT__xi8oqLvik-ZpuGsUHv9KFTY3AiylSeQF3Mc4oYjTjIp9SZuSM9gYKUQ97ikEHwBikQsIUqZH4JAICkbiUpBZ2bt7JcTYmZq8ZgHjg-zhrls3wgAu66bg21vivsCJul6hPjIMqHnvcMqw11yEJPEcUNG5zBI7YOa_JO_Dzj" />
+                    <div>
+                        <p class="text-white text-sm font-semibold">Priya M.</p>
+                        <p class="text-text-secondary text-xs">Active • 5km away</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        class="w-8 h-8 rounded-full bg-surface-highlight flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">chat</span>
+                    </button>
+                    <button
+                        class="w-8 h-8 rounded-full bg-surface-highlight flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">call</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Sticky Bottom Action Bar -->
+    <footer
+        class="fixed bottom-0 left-0 w-full bg-surface-dark border-t border-primary/10 p-4 pb-8 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
+        <div class="flex gap-3">
+            <button
+                class="flex-1 bg-surface-highlight text-white h-12 rounded-xl font-semibold text-sm hover:bg-white/10 transition-colors border border-white/5">
+                Log Remark
+            </button>
+            <button
+                class="flex-[2] bg-primary text-white h-12 rounded-xl font-bold text-sm hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                Update Status
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </button>
+        </div>
+    </footer>
+</body>
+
+</html>

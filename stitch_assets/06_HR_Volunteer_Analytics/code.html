@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HR &amp; Volunteer Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c72929",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#121212",
+                        "surface-dark": "#1E1E1E",
+                        "surface-highlight": "#2A2A2A",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scrolling lists */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased overflow-x-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Header Section -->
+<header class="sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 pt-12 pb-4">
+<div class="flex items-center justify-between mb-1">
+<h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">HR Dashboard</h1>
+<button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-surface-highlight transition-colors text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Oct 24, 2023</p>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 flex flex-col gap-6 p-4 pb-24 overflow-y-auto">
+<!-- Lock Schedule Toggle -->
+<div class="flex items-center justify-between p-4 rounded-xl bg-white dark:bg-surface-dark shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-gray-900 dark:text-white">Lock Schedule</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Freeze assignments for next week</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Burnout Warning Section -->
+<section>
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        Burnout Warning 
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary uppercase tracking-wider">Critical</span>
+</h2>
+<a class="text-xs font-medium text-primary hover:text-primary/80" href="#">View All</a>
+</div>
+<div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-4 px-4 snap-x">
+<!-- High Risk Card -->
+<div class="snap-center shrink-0 w-64 p-4 rounded-xl bg-surface-dark border border-l-4 border-l-primary border-t-gray-800 border-r-gray-800 border-b-gray-800 dark:bg-gradient-to-br dark:from-surface-dark dark:to-[#251a1a]">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
+<img alt="Portrait of Rahul" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-zqRQlWSDRtXzd0qUvIN4q4kAnXhF4FJpuXypc_KvUSC2J0uO-hfwtX__MYLMGoEevTzy_Zlv2luJrktERAgorzYJhKHJsw2QBwD1ALh2dRb-IfxpGPpzzv-Ra02aWowRGUHRNdOnvS9bXxbJ1_2hJ4tVu0ZLKaEiZP_z7TlL32jlgUSXUPWk1ciMHSo7a-f4ZQA9c5GPXrTJ6Tb7kLolTD00QTMMXTCk93C8feGO1aFR0q8osF3TYc0VXln55PhP5Dj12VcYiwkk"/>
+</div>
+<div>
+<p class="text-sm font-bold text-white">Rahul S.</p>
+<p class="text-xs text-gray-400">Senior Volunteer</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs">
+<span class="text-gray-400">Hours this week</span>
+<span class="text-white font-mono">55h / 40h</span>
+</div>
+<div class="w-full bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+<p class="text-xs text-primary mt-1 font-medium">High Risk: Exceeds limit by 37%</p>
+</div>
+</div>
+<!-- Medium Risk Card -->
+<div class="snap-center shrink-0 w-64 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 border-l-4 dark:border-l-amber-500 border-l-amber-500">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
+<img alt="Portrait of Priya" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEt39EznI8X2WSu-cUy7-Jzgc1NudJcx_5JXPPuHPTnzGy_Xl0YfXsZ9q4xIDbrb9wVVJfqVPGQxmhc91oS437IHbFLtdYhSI3pDFxuV8P54qMXJd9iLTrR9Tgrf__C0iU0Wm8I5pXxGHxkewX6FQ_cGQkNuDqQlBoVn5drxVv_UmsJ5ayIavUl0-LHSAiqNbJ9B-b1r7d3XQ_UL3SFdg_Wn5W8VAFCsL7LUceGHoLtbPa1hZGMEco8hwM5SuFuXoCJae6tHPeYzvY"/>
+</div>
+<div>
+<p class="text-sm font-bold text-gray-900 dark:text-white">Priya M.</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Coordinator</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-amber-500" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs">
+<span class="text-gray-500 dark:text-gray-400">Hours this week</span>
+<span class="text-gray-900 dark:text-white font-mono">42h / 40h</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-amber-500 h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+<p class="text-xs text-amber-600 dark:text-amber-500 mt-1 font-medium">Warning: Approaching burnout</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Participation Stats Chart -->
+<section class="p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-base font-bold text-gray-900 dark:text-white">Volunteer Participation</h2>
+<select class="bg-transparent text-xs font-medium text-gray-500 dark:text-gray-400 border-none outline-none focus:ring-0 cursor-pointer">
+<option>Last 30 Days</option>
+<option>Last 7 Days</option>
+</select>
+</div>
+<!-- CSS-only Line Chart Representation -->
+<div class="relative h-48 w-full flex items-end justify-between gap-1 px-1">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="border-t border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-t border-dashed border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-t border-dashed border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-t border-gray-100 dark:border-gray-800 w-full h-0"></div>
+</div>
+<!-- Data Points (using spans for bars/points simulation) -->
+<!-- Simulating a curve with diverse heights -->
+<div class="z-10 w-full h-full flex items-end justify-between pt-4">
+<div class="w-[8%] bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all h-[30%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">12</div></div>
+<div class="w-[8%] bg-primary/30 hover:bg-primary/50 rounded-t-sm transition-all h-[45%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">24</div></div>
+<div class="w-[8%] bg-primary/40 hover:bg-primary/60 rounded-t-sm transition-all h-[35%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">18</div></div>
+<div class="w-[8%] bg-primary/50 hover:bg-primary/70 rounded-t-sm transition-all h-[60%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">42</div></div>
+<div class="w-[8%] bg-primary hover:bg-primary/90 rounded-t-sm transition-all h-[85%] relative group shadow-[0_0_10px_rgba(199,41,41,0.5)]"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">68</div></div>
+<div class="w-[8%] bg-primary/60 hover:bg-primary/80 rounded-t-sm transition-all h-[70%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">55</div></div>
+<div class="w-[8%] bg-primary/40 hover:bg-primary/60 rounded-t-sm transition-all h-[50%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">32</div></div>
+<div class="w-[8%] bg-primary/30 hover:bg-primary/50 rounded-t-sm transition-all h-[40%] relative group"><div class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded">21</div></div>
+</div>
+</div>
+<div class="flex justify-between mt-2 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+<span>Week 1</span>
+<span>Week 2</span>
+<span>Week 3</span>
+<span>Week 4</span>
+</div>
+</section>
+<!-- Camps per Manager -->
+<section>
+<h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Camps per Manager</h2>
+<div class="flex flex-col gap-3">
+<!-- Manager Item 1 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
+<div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold text-sm">AK</div>
+<div class="flex-1">
+<div class="flex justify-between mb-1">
+<span class="text-sm font-semibold text-gray-900 dark:text-white">Amit K.</span>
+<span class="text-xs font-medium text-primary">5 Active Camps</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</div>
+<!-- Manager Item 2 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
+<div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold text-sm">SR</div>
+<div class="flex-1">
+<div class="flex justify-between mb-1">
+<span class="text-sm font-semibold text-gray-900 dark:text-white">Sneha R.</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">3 Active Camps</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary/60 h-1.5 rounded-full" style="width: 50%"></div>
+</div>
+</div>
+</div>
+<!-- Manager Item 3 -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800">
+<div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold text-sm">JD</div>
+<div class="flex-1">
+<div class="flex justify-between mb-1">
+<span class="text-sm font-semibold text-gray-900 dark:text-white">John D.</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">2 Active Camps</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary/40 h-1.5 rounded-full" style="width: 35%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 z-30 w-full max-w-md bg-surface-dark border-t border-gray-800 pb-safe">
+<div class="flex justify-around items-center h-16 px-2">
+<a class="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+<span class="text-[10px] font-medium">Volunteers</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">camping</span>
+<span class="text-[10px] font-medium">Camps</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full space-y-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="text-[10px] font-medium">Analytics</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

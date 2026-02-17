@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Personal Information - BloodConnect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#c72929",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#201212",
+                        "surface-dark": "#2a1a1a", // Slightly lighter than bg-dark for inputs/cards
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetic in dark mode */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #201212; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #442a2a; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5c3a3a; 
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 antialiased min-h-screen flex flex-col items-center justify-start overflow-x-hidden selection:bg-primary selection:text-white">
+<!-- Mobile Container -->
+<div class="w-full max-w-md mx-auto flex flex-col min-h-screen relative shadow-2xl dark:shadow-black">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between p-4 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/10">
+<button class="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Edit Profile</h1>
+<button class="text-primary font-bold text-base px-2 py-1 hover:bg-primary/10 rounded transition-colors">
+                Save
+            </button>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 w-full flex flex-col gap-6 p-4 pb-12">
+<!-- Avatar Section -->
+<div class="flex flex-col items-center justify-center pt-2 pb-4">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-surface-light dark:border-surface-dark shadow-lg">
+<img alt="Professional woman smiling slightly" class="w-full h-full object-cover" data-alt="Profile picture of Sarah Jenkins" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOEPkQSii5xa7ULT9lIUB_0J8dssDdAiVkl99jASK-Th3ia-TJInqAz4T3_8NigvpfKEaifubPn5-sBW0DdZqZmL1Nx736jfE7-UlYNfzy4Ct1ldc8wyLcWsLmVTyQxc1YXlDQNcfFuBcQkRM3lGjiZzQbvZUbLqFOv_n0f6q0FQd_EVLzkjnPcOX0Cs6v_VbH3QZCbWquSkKXb5CuXWeUb61va5TGYLn7js4ltsCqN0OFUEi8x7-NHsG8-DpEyzcpypHw0k0MWTmn"/>
+</div>
+<button aria-label="Change photo" class="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg border-4 border-background-light dark:border-background-dark hover:bg-red-700 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">photo_camera</span>
+</button>
+</div>
+<div class="mt-4 text-center">
+<h2 class="text-xl font-bold text-gray-900 dark:text-white">Sarah Jenkins</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400">Volunteer ID: #BC-8821</p>
+</div>
+</div>
+<!-- Contact Information Section -->
+<section class="space-y-4">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1">Contact Information</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl shadow-sm dark:shadow-none border border-gray-200 dark:border-white/5 overflow-hidden">
+<!-- Phone Input -->
+<div class="p-4 border-b border-gray-100 dark:border-white/5 relative group focus-within:bg-primary/5 transition-colors">
+<label class="block text-xs font-medium text-primary mb-1" for="phone">Phone Number</label>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-500">call</span>
+<input class="block w-full border-0 bg-transparent p-0 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 sm:text-base sm:leading-6" id="phone" type="tel" value="+1 (555) 012-3456"/>
+</div>
+</div>
+<!-- Email Input (Read Only) -->
+<div class="p-4 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">
+<label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1" for="email">Email Address (Read Only)</label>
+<div class="flex items-center gap-3 opacity-60">
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-500">mail</span>
+<input class="block w-full border-0 bg-transparent p-0 text-gray-900 dark:text-white focus:ring-0 sm:text-base sm:leading-6 cursor-not-allowed" id="email" readonly="" type="email" value="sarah.jenkins@bloodconnect.org"/>
+</div>
+</div>
+<!-- City Input -->
+<div class="p-4 relative group focus-within:bg-primary/5 transition-colors">
+<label class="block text-xs font-medium text-primary mb-1" for="city">City / Region</label>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-500">location_on</span>
+<input class="block w-full border-0 bg-transparent p-0 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 sm:text-base sm:leading-6" id="city" type="text" value="Portland, OR"/>
+</div>
+</div>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 px-2">Used for locating nearby donation drives and emergency requests.</p>
+</section>
+<!-- Availability Section -->
+<section class="space-y-4">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-1">Volunteer Status</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl p-4 shadow-sm dark:shadow-none border border-gray-200 dark:border-white/5 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-base font-medium text-gray-900 dark:text-white">Active Availability</span>
+<span class="text-sm text-gray-500 dark:text-gray-400">Receive urgent alerts</span>
+</div>
+<!-- iOS Style Toggle -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Availability Selector -->
+<div class="grid grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-primary/20 border-2 border-primary text-primary transition-all">
+<span class="material-symbols-outlined fill-current">check_circle</span>
+<span class="text-xs font-bold">Available</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-surface-dark border border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400 transition-all">
+<span class="material-symbols-outlined">schedule</span>
+<span class="text-xs font-medium">Weekends</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-surface-dark border border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400 transition-all">
+<span class="material-symbols-outlined">do_not_disturb_on</span>
+<span class="text-xs font-medium">Busy</span>
+</button>
+</div>
+</section>
+<!-- Skills Section -->
+<section class="space-y-4">
+<div class="flex justify-between items-end px-1">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Skills &amp; Expertise</h3>
+<button class="text-xs font-bold text-primary hover:text-red-400 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add</span> Add Skill
+                    </button>
+</div>
+<div class="flex flex-wrap gap-2">
+<!-- Active Tag -->
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium shadow-sm">
+<span>Phlebotomy</span>
+<button class="hover:bg-white/20 rounded-full p-0.5 transition-colors">
+<span class="material-symbols-outlined text-[14px] leading-none block">close</span>
+</button>
+</div>
+<!-- Active Tag -->
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium shadow-sm">
+<span>Driver</span>
+<button class="hover:bg-white/20 rounded-full p-0.5 transition-colors">
+<span class="material-symbols-outlined text-[14px] leading-none block">close</span>
+</button>
+</div>
+<!-- Active Tag -->
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium shadow-sm">
+<span>CPR Certified</span>
+<button class="hover:bg-white/20 rounded-full p-0.5 transition-colors">
+<span class="material-symbols-outlined text-[14px] leading-none block">close</span>
+</button>
+</div>
+<!-- Inactive Suggestion Tag -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:border-primary hover:text-primary transition-colors border-dashed">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Social Media</span>
+</button>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 px-2 leading-relaxed">Adding skills helps us match you with the right volunteer opportunities during blood drives.</p>
+</section>
+<div class="h-8"></div> <!-- Bottom Spacer -->
+</main>
+</div>
+</body></html>
