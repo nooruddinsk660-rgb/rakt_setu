@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'widgets/burnout_warning_card.dart';
 import 'widgets/manager_performance_card.dart';
 
@@ -115,6 +116,13 @@ class HRScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/hr/add-member'),
+        label: const Text('Add Member'),
+        icon: const Icon(Icons.person_add),
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+      ),
       appBar: AppBar(
         title: const Text('HR Dashboard'),
         centerTitle: false,

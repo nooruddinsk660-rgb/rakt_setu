@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/utils/validators.dart';
 import '../../shared/components/app_button.dart';
 import '../../shared/components/app_text_field.dart';
 import 'auth_provider.dart';
@@ -98,15 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     hint: 'Enter your email',
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: Icons.email_outlined,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
+                    validator: Validators.email,
                   ),
                   const SizedBox(height: 24),
                   AppTextField(
@@ -127,15 +120,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         });
                       },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
+                    validator: Validators.password,
                   ),
                   Align(
                     alignment: Alignment.centerRight,
@@ -151,6 +136,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     text: 'LOGIN',
                     onPressed: _handleLogin,
                     isLoading: isLoading,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Don't have an account?"),
+                      TextButton(
+                        onPressed: () => context.push('/signup'),
+                        child: const Text('Sign Up'),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -5,8 +5,14 @@ import '../storage/secure_storage.dart';
 class ApiClient {
   final Dio _dio;
   final SecureStorage _storage;
-  // Use 10.0.2.2 for Android emulator to access localhost
-  static const String _baseUrl = 'http://10.0.2.2:5000/api';
+  static String get _baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:5000/api';
+    }
+    // For Android Emulator, use 10.0.2.2
+    // For iOS Simulator, use localhost
+    return 'http://10.0.2.2:5000/api';
+  }
 
   ApiClient(this._storage)
     : _dio = Dio(

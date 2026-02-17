@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/storage/secure_storage.dart';
 import '../features/auth/login_screen.dart';
+import '../features/auth/signup_screen.dart';
 import '../features/auth/forgot_password_screen.dart';
 import '../features/auth/account_locked_screen.dart';
 import '../features/auth/account_locked_screen.dart';
@@ -13,6 +14,7 @@ import '../features/helpline/helpline_screen.dart';
 import '../features/camp/camp_screen.dart';
 import '../features/outreach/outreach_screen.dart';
 import '../features/hr/hr_screen.dart';
+import '../features/hr/add_team_member_screen.dart';
 import '../features/operations/operations_screen.dart';
 import '../features/notifications/notification_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -55,7 +57,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/outreach',
         builder: (context, state) => const OutreachScreen(),
       ),
-      GoRoute(path: '/hr', builder: (context, state) => const HRScreen()),
+      GoRoute(
+        path: '/hr',
+        builder: (context, state) => const HRScreen(),
+        routes: [
+          GoRoute(
+            path: 'add-member',
+            builder: (context, state) => const AddTeamMemberScreen(),
+          ),
+        ],
+      ),
       GoRoute(
         path: '/operations',
         builder: (context, state) => const OperationsScreen(),
@@ -78,12 +89,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isRecovering =
           state.uri.toString() == '/forgot-password' ||
           state.uri.toString() == '/account-locked';
+      final isSigningUp = state.uri.toString() == '/signup';
 
       if (token == null) {
-        return (isLoggingIn || isRecovering) ? null : '/login';
+        return (isLoggingIn || isRecovering || isSigningUp) ? null : '/login';
       }
 
-      if (isLoggingIn) {
+      if (isLoggingIn || isSigningUp) {
         return '/dashboard';
       }
 

@@ -28,6 +28,27 @@ class AuthRepository {
     }
   }
 
+  Future<void> register(
+    String name,
+    String email,
+    String password,
+    String role,
+  ) async {
+    try {
+      await _client.post(
+        '/auth/register',
+        data: {
+          'name': name,
+          'email': email,
+          'password': password,
+          'role': role,
+        },
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> forgotPassword(String email) async {
     try {
       await _client.post('/auth/forgot-password', data: {'email': email});
