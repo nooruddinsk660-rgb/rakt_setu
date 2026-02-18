@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants/role_constants.dart';
 import '../../core/utils/validators.dart';
 import '../../shared/components/app_button.dart';
 import '../../shared/components/app_text_field.dart';
@@ -22,7 +23,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
   final _roleController = TextEditingController(
-    text: 'VOLUNTEER',
+    text: AppRole.volunteer.toJson(),
   ); // Default role to valid enum
   String? _selectedBloodGroup;
   bool _isLoading = false;
@@ -212,6 +213,31 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             }
                             return null;
                           },
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _roleController.text.isEmpty
+                              ? 'VOLUNTEER'
+                              : _roleController.text,
+                          decoration: InputDecoration(
+                            labelText: 'I want to join as',
+                            prefixIcon: const Icon(Icons.person_pin_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'VOLUNTEER',
+                              child: Text('Volunteer'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'DONOR',
+                              child: Text('Donor'),
+                            ),
+                          ],
+                          onChanged: (v) => _roleController.text = v!,
+                          validator: (v) => v == null ? 'Select Role' : null,
                         ),
                         const SizedBox(height: 32),
                         AppButton(

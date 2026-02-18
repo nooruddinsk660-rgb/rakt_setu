@@ -8,9 +8,18 @@ final outreachRepositoryProvider = Provider<OutreachRepository>((ref) {
   return OutreachRepository(apiClient.client);
 });
 
+final outreachFilterProvider = StateProvider.autoDispose<Map<String, dynamic>>(
+  (ref) => {},
+);
+
 final outreachLeadsProvider = FutureProvider.autoDispose<List<dynamic>>((
   ref,
 ) async {
   final repository = ref.watch(outreachRepositoryProvider);
-  return repository.getLeads();
+  final filters = ref.watch(outreachFilterProvider);
+  // Remove null or empty filters
+  final activeFilters = Map<String, dynamic>.from(filters)
+    ..removeWhere((k, v) => v == null || v.toString().isEmpty);
+
+  return repository.getLeads(filters: activeFilters);
 });

@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/api_client.dart';
 import '../../core/storage/secure_storage.dart';
 import 'auth_repository.dart';
+import 'user_model.dart';
+export 'user_model.dart';
 
 final secureStorageProvider = Provider<SecureStorage>((ref) => SecureStorage());
 
@@ -16,26 +18,58 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(client, storage);
 });
 
+final currentUserProvider = StateNotifierProvider<UserNotifier, AppUser?>((
+  ref,
+) {
+  final repository = ref.watch(authRepositoryProvider);
+  return UserNotifier(repository);
+});
+
 final authStateProvider = StateNotifierProvider<AuthNotifier, AsyncValue<void>>(
   (ref) {
     final repository = ref.watch(authRepositoryProvider);
-    return AuthNotifier(repository);
+    final userNotifier = ref.read(currentUserProvider.notifier);
+    return AuthNotifier(repository, userNotifier);
   },
 );
 
-class AuthNotifier extends StateNotifier<AsyncValue<void>> {
+class UserNotifier extends StateNotifier<AppUser?> {
   final AuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(const AsyncData(null));
+  UserNotifier(this._repository) : super(null) {
+    refresh();
+  }
+
+  Future<void> refresh() async {
+    state = await _repository.getCurrentUser();
+  }
+
+  void clear() {
+    state = null;
+  }
+}
+
+class AuthNotifier extends StateNotifier<AsyncValue<void>> {
+  final AuthRepository _repository;
+  final UserNotifier _userNotifier;
+
+  AuthNotifier(this._repository, this._userNotifier)
+    : super(const AsyncData(null));
 
   Future<void> login(String email, String password) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _repository.login(email, password));
+    state = await AsyncValue.guard(() async {
+      await _repository.login(email, password);
+      await _userNotifier.refresh();
+    });
   }
 
   Future<void> logout() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _repository.logout());
+    state = await AsyncValue.guard(() async {
+      await _repository.logout();
+      _userNotifier.clear();
+    });
   }
 
   Future<void> forgotPassword(String email) async {

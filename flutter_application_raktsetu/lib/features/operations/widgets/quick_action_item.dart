@@ -18,7 +18,7 @@ class QuickActionItem extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => Future.microtask(() => onTap()),
       child: Column(
         children: [
           Container(

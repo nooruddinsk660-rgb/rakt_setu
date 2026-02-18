@@ -8,6 +8,7 @@ router.get('/leaderboard', authenticate, volunteerController.getLeaderboard);
 
 // Volunteer Protected Routes
 router.post('/onboard', authenticate, volunteerController.onboardVolunteer);
+router.get('/profile', authenticate, volunteerController.getProfile);
 router.put('/status', authenticate, volunteerController.updateStatus);
 
 // Admin Routes (For activity logging simulation)

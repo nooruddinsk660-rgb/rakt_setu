@@ -31,7 +31,7 @@ class CampTimelineStep extends StatelessWidget {
     switch (status) {
       case StepStatus.completed:
         indicatorColor = Colors.green.withOpacity(0.2);
-        contentColor = theme.textTheme.bodyMedium!.color!;
+        contentColor = theme.textTheme.bodyMedium?.color ?? Colors.black;
         indicatorIcon = const Icon(Icons.check, color: Colors.green, size: 16);
         break;
       case StepStatus.active:

@@ -95,6 +95,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
         title: const Text('Notifications'),
         centerTitle: false,
         actions: [

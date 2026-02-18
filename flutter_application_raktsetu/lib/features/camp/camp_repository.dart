@@ -23,6 +23,14 @@ class CampRepository {
     }
   }
 
+  Future<void> updateStatus(String id, String status) async {
+    try {
+      await _client.put('/camp/$id/status', data: {'status': status});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> updateDonationCount(String id, int count) async {
     try {
       await _client.put('/camp/$id/stats', data: {'count': count});

@@ -44,9 +44,19 @@ class HrRepository {
 
   Future<void> toggleLock(String userId) async {
     try {
+      // Backend expects PUT /hr/schedule-lock/:userId
       await _client.put('/hr/schedule-lock/$userId');
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<List<dynamic>> getVolunteers() async {
+    try {
+      final response = await _client.get('/hr/volunteers');
+      return response.data['volunteers'] ?? [];
+    } catch (e) {
+      return [];
     }
   }
 }

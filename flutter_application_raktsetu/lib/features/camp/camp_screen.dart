@@ -1,28 +1,121 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared/components/app_button.dart';
+import '../auth/auth_provider.dart';
+import 'camp_provider.dart';
 import 'widgets/camp_summary_card.dart';
 import 'widgets/camp_timeline_step.dart';
 import 'widgets/team_member_card.dart';
 
-class CampScreen extends StatelessWidget {
+class CampScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> camp;
 
-  const CampScreen({
-    super.key,
-    this.camp = const {}, // Default empty map to avoid errors if null
-  });
+  const CampScreen({super.key, this.camp = const {}});
+
+  @override
+  ConsumerState<CampScreen> createState() => _CampScreenState();
+}
+
+class _CampScreenState extends ConsumerState<CampScreen> {
+  late Map<String, dynamic> _currentCamp;
+  bool _isLoading = false;
+
+  final List<String> _workflowSteps = [
+    'LeadReceived',
+    'ContactingPOC',
+    'BloodBankBooked',
+    'VolunteersAssigned',
+    'CampCompleted',
+    'FollowupPending',
+    'Closed',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentCamp = widget.camp;
+  }
+
+  int get _currentStepIndex {
+    final status = _currentCamp['workflowStatus'] ?? 'LeadReceived';
+    final index = _workflowSteps.indexOf(status);
+    return index != -1 ? index : 0;
+  }
+
+  bool get _isCreator {
+    final user = ref.watch(currentUserProvider);
+    return user?.id == _currentCamp['createdBy'];
+  }
+
+  bool get _isAdmin {
+    final user = ref.watch(currentUserProvider);
+    return user?.role == 'ADMIN';
+  }
+
+  bool get _canEdit => _isCreator || _isAdmin;
+
+  Future<void> _advanceStage() async {
+    if (_currentStepIndex >= _workflowSteps.length - 1) return;
+
+    final nextStage = _workflowSteps[_currentStepIndex + 1];
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ref
+          .read(campRepositoryProvider)
+          .updateStatus(_currentCamp['_id'], nextStage);
+
+      // Update local state or refresh provider
+      // Ideally we should re-fetch the camp details, but for now we update locally
+      // Assuming successful update
+      setState(() {
+        _currentCamp = Map.from(_currentCamp)..['workflowStatus'] = nextStage;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Stage updated to $nextStage')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update stage: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _makeCall(String? phoneNumber) async {
+    if (phoneNumber == null) return;
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    }
+  }
+
+  StepStatus _getStepStatus(int stepIndex) {
+    if (stepIndex < _currentStepIndex) return StepStatus.completed;
+    if (stepIndex == _currentStepIndex) return StepStatus.active;
+    return StepStatus.pending;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final status = _currentCamp['workflowStatus'] ?? 'LeadReceived';
+
     return Scaffold(
-      extendBodyBehindAppBar:
-          true, // For the gradient effect if needed, but design has solid white/dark
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Column(
           children: [
             Text(
-              'Camp #${camp['_id']?.toString().substring(0, 6) ?? '...'}',
+              'Camp #${_currentCamp['_id']?.toString().substring(0, 6) ?? '...'}',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
@@ -30,7 +123,8 @@ class CampScreen extends StatelessWidget {
               ),
             ),
             Text(
-              camp['location']?.toString().split(',')[0] ?? 'Camp Details',
+              _currentCamp['location']?.toString().split(',')[0] ??
+                  'Camp Details',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
@@ -61,18 +155,19 @@ class CampScreen extends StatelessWidget {
                   children: [
                     // Summary Card
                     CampSummaryCard(
-                      campName: camp['organizationName'] ?? 'Unknown Camp',
-                      location: camp['location'] ?? 'Unknown Location',
-                      date: camp['eventDate'] != null
-                          ? camp['eventDate'].toString().split(' ')[0]
-                          : 'Date TBD',
+                      campName:
+                          _currentCamp['organizationName'] ?? 'Unknown Camp',
+                      location: _currentCamp['location'] ?? 'Unknown Location',
+                      date:
+                          _currentCamp['eventDate']?.toString().split(' ')[0] ??
+                          'Date TBD',
                       time: '09:00 AM - 02:00 PM', // Hardcoded for now
                       estimatedDonors:
-                          'Est. ${camp['donationCount'] ?? 0} Donors',
+                          'Est. ${_currentCamp['donationCount'] ?? 0} Donors',
                     ),
                     const SizedBox(height: 24),
 
-                    // Workflow Stepper
+                    // Workflow Stepper Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -98,7 +193,7 @@ class CampScreen extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Stage 3 of 7',
+                            'Stage ${_currentStepIndex + 1} of ${_workflowSteps.length}',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -109,57 +204,64 @@ class CampScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    const CampTimelineStep(
+
+                    // Workflow Steps
+                    CampTimelineStep(
                       title: 'Lead Received',
-                      date: 'Oct 20',
+                      date: 'Oct 20', // TODO: Parse creation date
                       subtitle: 'Verified by Admin',
-                      status: StepStatus.completed,
+                      status: _getStepStatus(0),
                     ),
-                    const CampTimelineStep(
+                    CampTimelineStep(
                       title: 'Contacting POC',
                       date: 'Oct 21',
                       subtitle: 'Initial call successful',
-                      status: StepStatus.completed,
+                      status: _getStepStatus(1),
                     ),
                     CampTimelineStep(
                       title: 'Blood Bank Booked',
-                      status: StepStatus.active,
+                      status: _getStepStatus(2),
                       subtitle: 'Confirming logistics with Lions Blood Bank.',
-                      actions: [
-                        Expanded(
-                          child: AppButton(
-                            text: 'Call Bank',
-                            icon: Icons.call,
-                            onPressed: () {},
-                            height: 36,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: AppButton(
-                            text: 'Details',
-                            isOutlined: true,
-                            onPressed: () {},
-                            height: 36,
-                          ),
-                        ),
-                      ],
+                      actions: _getStepStatus(2) == StepStatus.active
+                          ? [
+                              Expanded(
+                                child: AppButton(
+                                  text: 'Call Bank',
+                                  icon: Icons.call,
+                                  onPressed: () => _makeCall(
+                                    _currentCamp['bloodBankPhone'] ??
+                                        '1234567890',
+                                  ), // Fallback to placeholder
+                                  height: 36,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: AppButton(
+                                  text: 'Details',
+                                  isOutlined: true,
+                                  onPressed: () {},
+                                  height: 36,
+                                ),
+                              ),
+                            ]
+                          : null,
                     ),
-                    const CampTimelineStep(
+                    CampTimelineStep(
                       title: 'Volunteers Assigned',
-                      status: StepStatus.pending,
+                      status: _getStepStatus(3),
                     ),
-                    const CampTimelineStep(
+                    CampTimelineStep(
                       title: 'Camp Completed',
-                      status: StepStatus.pending,
+                      status: _getStepStatus(4),
                     ),
-                    const CampTimelineStep(
+                    CampTimelineStep(
                       title: 'Followup Pending',
-                      status: StepStatus.pending,
+                      status: _getStepStatus(5),
                     ),
-                    const CampTimelineStep(
+                    CampTimelineStep(
                       title: 'Closed',
-                      status: StepStatus.pending,
+                      status: _getStepStatus(6),
                       isLast: true,
                     ),
 
@@ -191,17 +293,18 @@ class CampScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           TeamMemberCard(
-                            name: 'Rahul Verma',
+                            name: 'Self', // TODO: Get creator name
                             role: 'Camp Manager',
-                            initials: 'RV',
+                            initials: 'ME',
                             onChat: () {},
                           ),
                           const Divider(),
                           TeamMemberCard(
-                            name: 'Amit Singh',
+                            name: _currentCamp['poc']?['name'] ?? 'POC',
                             role: 'Location POC',
-                            initials: 'AS',
-                            onCall: () {},
+                            initials: 'P',
+                            onCall: () =>
+                                _makeCall(_currentCamp['poc']?['phone']),
                           ),
                         ],
                       ),
@@ -214,20 +317,23 @@ class CampScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          border: Border(
-            top: BorderSide(color: Theme.of(context).dividerColor),
-          ),
-        ),
-        child: AppButton(
-          text: 'Mark Stage Complete',
-          icon: Icons.arrow_forward,
-          onPressed: () {},
-        ),
-      ),
+      bottomSheet: _canEdit && _currentStepIndex < _workflowSteps.length - 1
+          ? Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                border: Border(
+                  top: BorderSide(color: Theme.of(context).dividerColor),
+                ),
+              ),
+              child: AppButton(
+                text: 'Mark Stage Complete',
+                icon: Icons.arrow_forward,
+                isLoading: _isLoading,
+                onPressed: _advanceStage,
+              ),
+            )
+          : null,
     );
   }
 }

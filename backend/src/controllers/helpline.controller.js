@@ -109,7 +109,7 @@ exports.createRequest = async (req, res) => {
 exports.updateStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status, callRemark } = req.body; // Extract callRemark from body
+        const { status, callRemark, assignedVolunteer } = req.body; // Extract callRemark and assignedVolunteer from body
 
         const request = await HelplineRequest.findById(id);
         if (!request) {
@@ -138,6 +138,15 @@ exports.updateStatus = async (req, res) => {
         }
         else {
             request.status = status;
+        }
+
+        // Manual Assignment override
+        if (assignedVolunteer) {
+            request.assignedVolunteer = assignedVolunteer;
+            if (status === 'Assigned') {
+                request.assignedAt = new Date();
+                // TODO: Send notification to new volunteer
+            }
         }
 
         await request.save();

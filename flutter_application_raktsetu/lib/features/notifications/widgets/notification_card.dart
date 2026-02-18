@@ -65,20 +65,12 @@ class NotificationCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isUnread
             ? theme.cardColor
             : (isDark ? Colors.white.withOpacity(0.02) : Colors.grey.shade50),
         borderRadius: BorderRadius.circular(12),
-        border: Border(
-          left: isUnread
-              ? BorderSide(color: theme.primaryColor, width: 4)
-              : BorderSide.none,
-          top: BorderSide(color: theme.dividerColor.withOpacity(0.05)),
-          right: BorderSide(color: theme.dividerColor.withOpacity(0.05)),
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.05)),
-        ),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.05)),
         boxShadow: isUnread
             ? [
                 BoxShadow(
@@ -89,112 +81,135 @@ class NotificationCard extends StatelessWidget {
               ]
             : null,
       ),
-      child: Stack(
-        children: [
-          if (isUnread)
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: theme.primaryColor,
-                  shape: BoxShape.circle,
-                ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          children: [
+            // Left Indicator for Unread
+            if (isUnread)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 4,
+                child: Container(color: theme.primaryColor),
               ),
-            ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: isUnread
-                                  ? FontWeight.bold
-                                  : FontWeight
-                                        .w600, // Slightly bolder if unread
-                            ),
-                          ),
+
+            // Content Padding
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Stack(
+                children: [
+                  if (isUnread)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: theme.primaryColor,
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: 16), // Space for dot
-                        Text(
-                          timeAgo,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade600,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (tags != null && tags!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Wrap(
-                          spacing: 8,
-                          children: tags!
-                              .map(
-                                (tag) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.primaryColor.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: theme.primaryColor.withOpacity(
-                                        0.1,
-                                      ),
-                                    ),
-                                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: iconBgColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(icon, color: iconColor, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
                                   child: Text(
-                                    tag,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: theme.primaryColor,
-                                      fontWeight: FontWeight.w500,
+                                    title,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: isUnread
+                                          ? FontWeight.bold
+                                          : FontWeight
+                                                .w600, // Slightly bolder if unread
                                     ),
                                   ),
                                 ),
-                              )
-                              .toList(),
+                                const SizedBox(width: 16), // Space for dot
+                                Text(
+                                  timeAgo,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              description,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isDark
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade600,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (tags != null && tags!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Wrap(
+                                  spacing: 8,
+                                  children: tags!
+                                      .map(
+                                        (tag) => Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: theme.primaryColor
+                                                .withOpacity(0.05),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            border: Border.all(
+                                              color: theme.primaryColor
+                                                  .withOpacity(0.1),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            tag,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: theme.primaryColor,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

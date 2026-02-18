@@ -30,6 +30,19 @@ class SecureStorage {
     return await _storage.read(key: _roleKey);
   }
 
+  Future<void> saveUser(String id, String name, String email) async {
+    await _storage.write(key: 'user_id', value: id);
+    await _storage.write(key: 'user_name', value: name);
+    await _storage.write(key: 'user_email', value: email);
+  }
+
+  Future<Map<String, String>> getUser() async {
+    final id = await _storage.read(key: 'user_id');
+    final name = await _storage.read(key: 'user_name');
+    final email = await _storage.read(key: 'user_email');
+    return {'id': id ?? '', 'name': name ?? '', 'email': email ?? ''};
+  }
+
   Future<void> clearAll() async {
     await _storage.deleteAll();
   }

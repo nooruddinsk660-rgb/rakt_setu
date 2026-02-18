@@ -28,8 +28,13 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['ADMIN', 'MANAGER', 'HR', 'HELPLINE', 'VOLUNTEER'],
+        enum: ['ADMIN', 'MANAGER', 'HR', 'HELPLINE', 'VOLUNTEER', 'DONOR'],
         default: 'VOLUNTEER'
+    },
+    roleRequest: {
+        type: String,
+        enum: ['MANAGER', 'HR', 'HELPLINE', 'NONE'],
+        default: 'NONE'
     },
     city: {
         type: String,
@@ -49,20 +54,46 @@ const userSchema = new mongoose.Schema({
     },
     lastLogin: {
         type: Date
+    },
+    // --- Donor Specific Fields ---
+    bloodGroup: {
+        type: String,
+        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        // Not required for all users (e.g. Admins might not donate)
+        // But if we want all users to be potential donors:
+        required: false
+    },
+    availabilityStatus: {
+        type: Boolean,
+        default: true
+    },
+    lastDonationDate: {
+        type: Date
+    },
+    nextEligibleDate: {
+        type: Date
     }
 }, {
     timestamps: true
 });
 
-// Pre-save hook to hash password
+// Pre-save hook to hash password and calculate eligibility
 userSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
+    // Hash Password
+    if (this.isModified('password')) {
+        try {
+            const salt = await bcrypt.genSalt(10);
+            this.password = await bcrypt.hash(this.password, salt);
+        } catch (error) {
+            throw error;
+        }
+    }
 
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-    } catch (error) {
-        throw error;
+    // Calculate Next Eligible Date
+    if (this.isModified('lastDonationDate') && this.lastDonationDate) {
+        const nextDate = new Date(this.lastDonationDate);
+        nextDate.setDate(nextDate.getDate() + 90); // +90 days rule
+        this.nextEligibleDate = nextDate;
     }
 });
 

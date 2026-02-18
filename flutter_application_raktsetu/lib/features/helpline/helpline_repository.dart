@@ -27,6 +27,7 @@ class HelplineRepository {
     String id,
     String status, {
     String? callRemark,
+    String? assignedVolunteerId,
   }) async {
     try {
       await _client.put(
@@ -34,6 +35,8 @@ class HelplineRepository {
         data: {
           'status': status,
           if (callRemark != null) 'callRemark': callRemark,
+          if (assignedVolunteerId != null)
+            'assignedVolunteer': assignedVolunteerId,
         },
       );
     } catch (e) {

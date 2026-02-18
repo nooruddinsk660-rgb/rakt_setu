@@ -16,7 +16,19 @@ class _CampListScreenState extends ConsumerState<CampListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Donation Camps'), centerTitle: true),
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
+        title: const Text('Donation Camps'),
+        centerTitle: true,
+      ),
       body: ref
           .watch(campsProvider)
           .when(

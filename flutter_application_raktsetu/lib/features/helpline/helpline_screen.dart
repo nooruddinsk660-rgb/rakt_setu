@@ -5,6 +5,8 @@ import '../../shared/components/app_text_field.dart';
 import 'widgets/helpline_filter_bar.dart';
 import 'widgets/helpline_request_card.dart';
 import 'helpline_provider.dart';
+import '../volunteer/volunteer_provider.dart';
+import '../hr/hr_provider.dart';
 
 class HelplineScreen extends ConsumerStatefulWidget {
   const HelplineScreen({super.key});
@@ -26,14 +28,7 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
 
     if (currentStatus == 'Pending') {
       // Assign to self or trigger assignment logic
-      // For now, simpler flow: Auto-assign to self (if backend allows) or just move to Assigned
-      // Backend createRequest does smart assignment. If Pending, it means no one found?
-      // Let's assume this button means "I accept this request"
-      // But we need to know if the backend supports "pick up".
-      // Backend updateStatus allows moving to Assigned? No, usually create -> assigned.
-      // If Pending, maybe we can move to Assigned manually?
-      // Let's try updating to 'Assigned'.
-      await _updateStatus(context, ref, id, 'Assigned');
+      _showAssignmentDialog(context, ref, id);
     } else if (currentStatus == 'Assigned') {
       // Move to InProgress
       await _updateStatus(context, ref, id, 'InProgress');
@@ -49,11 +44,17 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
     String id,
     String status, {
     String? remark,
+    String? assignedVolunteerId,
   }) async {
     try {
       await ref
           .read(helplineRepositoryProvider)
-          .updateStatus(id, status, callRemark: remark);
+          .updateStatus(
+            id,
+            status,
+            callRemark: remark,
+            assignedVolunteerId: assignedVolunteerId,
+          );
       // Refresh list
       ref.invalidate(helplineRequestsProvider);
     } catch (e) {
@@ -63,6 +64,81 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
         ).showSnackBar(SnackBar(content: Text('Failed to update: $e')));
       }
     }
+  }
+
+  void _showAssignmentDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String requestId,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Assign Volunteer'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: FutureBuilder<List<dynamic>>(
+            future: ref.read(hrRepositoryProvider).getVolunteers(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              final volunteers = snapshot.data ?? [];
+              if (volunteers.isEmpty) {
+                return const Center(child: Text('No active volunteers found'));
+              }
+
+              // Filter out those not available if needed, or show all
+              return ListView.separated(
+                itemCount: volunteers.length,
+                separatorBuilder: (ctx, i) => const Divider(),
+                itemBuilder: (ctx, i) {
+                  final v = volunteers[i];
+                  return ListTile(
+                    leading: CircleAvatar(child: Text((v['name'] ?? 'U')[0])),
+                    title: Text(v['name'] ?? 'Unknown'),
+                    subtitle: Text(
+                      '${v['city'] ?? 'Unknown location'} • ${v['phone'] ?? ''}',
+                    ),
+                    trailing: v['availabilityStatus'] == true
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 16,
+                          )
+                        : const Icon(
+                            Icons.cancel,
+                            color: Colors.grey,
+                            size: 16,
+                          ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _updateStatus(
+                        context,
+                        ref,
+                        requestId,
+                        'Assigned',
+                        assignedVolunteerId: v['_id'],
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showCompletionDialog(BuildContext context, WidgetRef ref, String id) {
@@ -122,47 +198,114 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Live Requests',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'BloodConnect Command Center',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontSize: 10,
+                color: Theme.of(context).hintColor,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Consumer(
+            builder: (context, ref, child) {
+              final profileAsync = ref.watch(volunteerProfileProvider);
+              return profileAsync.when(
+                data: (profile) {
+                  final isOnline = profile['availabilityStatus'] ?? false;
+                  return Row(
+                    children: [
+                      Text(
+                        isOnline ? 'Online' : 'Offline',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isOnline ? Colors.green : Colors.grey,
+                        ),
+                      ),
+                      Switch(
+                        value: isOnline,
+                        activeColor: Colors.green,
+                        onChanged: (val) async {
+                          try {
+                            await ref
+                                .read(volunteerRepositoryProvider)
+                                .updateStatus(availabilityStatus: val);
+                            ref.invalidate(volunteerProfileProvider);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    val
+                                        ? 'You are now Online'
+                                        : 'You are now Offline',
+                                  ),
+                                  backgroundColor: val
+                                      ? Colors.green
+                                      : Colors.grey,
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed: $e')),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 16.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+                error: (err, stack) => const Icon(Icons.error, size: 20),
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // Header
+            // Search Bar (Moved out of header)
             Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Live Requests',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            'BloodConnect Command Center',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: Theme.of(context).hintColor),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.refresh),
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    label: 'Search Requests',
-                    controller: _searchController,
-                    hint: 'Search patient, hospital or ID...',
-                    prefixIcon: Icons.search,
-                  ),
-                ],
+              padding: const EdgeInsets.all(16.0),
+              child: AppTextField(
+                label: 'Search Requests',
+                controller: _searchController,
+                hint: 'Search patient, hospital or ID...',
+                prefixIcon: Icons.search,
               ),
             ),
 
@@ -252,13 +395,13 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
         selectedIndex: 2, // Requests
         onDestinationSelected: (index) {
           if (index == 0) {
-            context.go('/dashboard');
+            Future.microtask(() => context.go('/dashboard'));
           } else if (index == 1) {
-            context.go('/donors');
+            Future.microtask(() => context.go('/donors'));
           } else if (index == 2) {
             // Already on Requests
           } else if (index == 3) {
-            context.go('/profile');
+            Future.microtask(() => context.go('/profile'));
           }
         },
         destinations: const [

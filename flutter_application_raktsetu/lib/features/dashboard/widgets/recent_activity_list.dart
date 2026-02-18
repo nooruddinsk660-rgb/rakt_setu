@@ -11,7 +11,24 @@ class RecentActivityList extends StatelessWidget {
     final activities = data ?? [];
 
     if (activities.isEmpty) {
-      return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recent Activity',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          const AppCard(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: Text('No recent activity to show')),
+            ),
+          ),
+        ],
+      );
     }
 
     return Column(
@@ -26,9 +43,9 @@ class RecentActivityList extends StatelessWidget {
         const SizedBox(height: 16),
         ...activities.map((activity) {
           // Activity is a HelplineRequest
-          final type = activity['requestType'] ?? 'Request';
+          final type = '${activity['bloodGroup'] ?? 'Blood'} Request';
           final status = activity['status'] ?? 'Pending';
-          final location = activity['location'] ?? 'Unknown';
+          final location = activity['city'] ?? 'Unknown';
           final createdAt = activity['createdAt'] as String?;
 
           // Simple time ago logic

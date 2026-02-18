@@ -34,133 +34,157 @@ class DashboardScreen extends ConsumerWidget {
             },
           ),
           Expanded(
-            child: ref
-                .watch(dashboardStatsProvider)
-                .when(
-                  data: (stats) => SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // KPI Cards
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Live Overview',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).primaryColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Updated 2m ago',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Key Metrics Row
-                        SizedBox(
-                          height: 140,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                // Force refresh of the provider
+                return ref.refresh(dashboardStatsProvider.future);
+              },
+              child: ref
+                  .watch(dashboardStatsProvider)
+                  .when(
+                    data: (stats) => SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // KPI Cards
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              MetricCard(
-                                title: 'Active Helplines',
-                                value:
-                                    stats['activeHelplines']?.toString() ?? '0',
-                                icon: Icons.support_agent,
-                                color: Theme.of(context).primaryColor,
-                                trend: '+2', // TODO: Calculate trend
-                                isPositiveTrend: false,
+                              Text(
+                                'Live Overview',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
-                              const SizedBox(width: 16),
-                              MetricCard(
-                                title: 'Total Volunteers',
-                                value:
-                                    stats['totalVolunteers']?.toString() ?? '0',
-                                icon: Icons.people,
-                                color: Colors.orange,
-                                trend: '+5',
-                                isPositiveTrend: true,
-                              ),
-                              const SizedBox(width: 16),
-                              MetricCard(
-                                title: 'Avg Response',
-                                value:
-                                    '${stats['avgResponseTimeMinutes'] ?? 0}m',
-                                icon: Icons.timer,
-                                color: Colors.blue,
-                                trend: '-1m',
-                                isPositiveTrend: true,
-                              ),
-                              const SizedBox(width: 16),
-                              MetricCard(
-                                title: 'Completion Rate',
-                                value: stats['taskCompletionRate'] ?? '0%',
-                                icon: Icons.check_circle,
-                                color: Colors.green,
-                                trend: '+1%',
-                                isPositiveTrend: true,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).primaryColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Updated just now',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                        ),
+                          // Key Metrics Row
+                          SizedBox(
+                            height: 140,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                MetricCard(
+                                  title: 'Active Helplines',
+                                  value:
+                                      stats['activeHelplines']?.toString() ??
+                                      '0',
+                                  icon: Icons.support_agent,
+                                  color: Theme.of(context).primaryColor,
+                                  trend: '+2', // TODO: Calculate trend
+                                  isPositiveTrend: false,
+                                ),
+                                const SizedBox(width: 16),
+                                MetricCard(
+                                  title: 'Total Volunteers',
+                                  value:
+                                      stats['totalVolunteers']?.toString() ??
+                                      '0',
+                                  icon: Icons.people,
+                                  color: Colors.orange,
+                                  trend: '+5',
+                                  isPositiveTrend: true,
+                                ),
+                                const SizedBox(width: 16),
+                                MetricCard(
+                                  title: 'Avg Response',
+                                  value:
+                                      '${stats['avgResponseTimeMinutes'] ?? 0}m',
+                                  icon: Icons.timer,
+                                  color: Colors.blue,
+                                  trend: '-1m',
+                                  isPositiveTrend: true,
+                                ),
+                                const SizedBox(width: 16),
+                                MetricCard(
+                                  title: 'Completion Rate',
+                                  value: stats['taskCompletionRate'] ?? '0%',
+                                  icon: Icons.check_circle,
+                                  color: Colors.green,
+                                  trend: '+1%',
+                                  isPositiveTrend: true,
+                                ),
+                              ],
+                            ),
+                          ),
 
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                        // Quick Actions
-                        QuickActionGrid(
-                          onBroadcastTap: () {
-                            // TODO: Implement Broadcast Alert
-                          },
-                          onApproveTap: () {
-                            // TODO: Implement Approve Request
-                          },
-                        ),
+                          // Quick Actions
+                          QuickActionGrid(
+                            onBroadcastTap: () {
+                              context.go('/outreach');
+                            },
+                            onApproveTap: () {
+                              context.go('/helpline');
+                            },
+                          ),
 
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                        // Performance Chart
-                        PerformanceChart(
-                          data: stats['campsPerCity'] as List<dynamic>?,
-                        ),
+                          // Performance Chart
+                          PerformanceChart(
+                            data: stats['campsPerCity'] as List<dynamic>?,
+                          ),
 
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                        // Recent Activity
-                        RecentActivityList(
-                          data: stats['recentRequests'] as List<dynamic>?,
-                        ),
+                          // Recent Activity
+                          RecentActivityList(
+                            data: stats['recentRequests'] as List<dynamic>?,
+                          ),
 
-                        // Bottom spacing for FAB or bottom nav
-                        const SizedBox(height: 80),
-                      ],
+                          // Bottom spacing for FAB or bottom nav
+                          const SizedBox(height: 80),
+                        ],
+                      ),
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Error loading stats',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              ref.refresh(dashboardStatsProvider);
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(
-                    child: Text(
-                      'Error loading stats: $err',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ),
+            ),
           ),
         ],
       ),
@@ -170,7 +194,9 @@ class DashboardScreen extends ConsumerWidget {
           if (index == 0) {
             // Already on Dashboard
           } else if (index == 1) {
-            context.go('/donors');
+            context.go('/donors'); // Volunteers -> Donors Directory
+            // Note: Donors screen handles its own bottom nav or needs a shell route
+            // For now direct navigation is fine, but state might be lost on back
           } else if (index == 2) {
             context.go('/helpline');
           } else if (index == 3) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../shared/components/app_button.dart';
 
 class AccountLockedScreen extends StatelessWidget {
@@ -64,8 +65,7 @@ class AccountLockedScreen extends StatelessWidget {
                 text: 'BACK TO LOGIN',
                 isOutlined: true,
                 onPressed: () {
-                  // Navigate back to login
-                  // context.go('/login');
+                  Future.microtask(() => context.go('/login'));
                 },
               ),
             ],

@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const donorAccessLogSchema = new mongoose.Schema({
     donorId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Donor',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Refers to the User who is the donor
         required: true
     },
     accessedBy: {

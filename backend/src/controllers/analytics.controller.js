@@ -53,7 +53,7 @@ exports.getAnalytics = async (req, res) => {
         const recentRequests = await HelplineRequest.find()
             .sort({ createdAt: -1 })
             .limit(5)
-            .select('requestType status createdAt location'); // Select fields needed for UI
+            .select('bloodGroup urgencyLevel status createdAt city'); // Select fields needed for UI
 
         res.status(200).json({
             success: true,

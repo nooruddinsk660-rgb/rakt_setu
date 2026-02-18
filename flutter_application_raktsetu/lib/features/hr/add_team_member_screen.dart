@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants/role_constants.dart';
 import '../../core/utils/validators.dart';
 import '../../shared/components/app_button.dart';
 import '../../shared/components/app_text_field.dart';
@@ -20,16 +21,8 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  String? _selectedRole;
+  AppRole? _selectedRole;
   bool _isLoading = false;
-
-  final List<String> _roles = [
-    'ADMIN',
-    'MANAGER',
-    'HR',
-    'HELPLINE',
-    'VOLUNTEER',
-  ];
 
   @override
   void dispose() {
@@ -49,7 +42,7 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
               name: _nameController.text.trim(),
               email: _emailController.text.trim(),
               phone: _phoneController.text.trim(),
-              role: _selectedRole!,
+              role: _selectedRole!.toJson(),
             );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -76,10 +69,9 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
     return Scaffold(
       // backgroundColor: Colors.grey[50], // Removed hardcoded background
       appBar: AppBar(
+        leading: const BackButton(),
         title: const Text('Add Team Member'),
-        // backgroundColor: Colors.white, // Removed
         elevation: 0,
-        // foregroundColor: Colors.black, // Removed
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -141,7 +133,7 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
+                          DropdownButtonFormField<AppRole>(
                             value: _selectedRole,
                             decoration: InputDecoration(
                               hintText: 'Select Role',
@@ -154,10 +146,10 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
                                 vertical: 16,
                               ),
                             ),
-                            items: _roles.map((role) {
+                            items: AppRole.values.map((role) {
                               return DropdownMenuItem(
                                 value: role,
-                                child: Text(role),
+                                child: Text(role.displayName),
                               );
                             }).toList(),
                             onChanged: (value) =>

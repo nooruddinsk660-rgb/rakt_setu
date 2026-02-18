@@ -64,6 +64,65 @@ exports.toggleLock = async (req, res) => {
     }
 };
 
+// Add Team Member (Admin/HR)
+exports.addTeamMember = async (req, res) => {
+    try {
+        const { name, email, phone, role } = req.body;
+
+        // Valid roles that can be added via this portal
+        const allowedRoles = ['MANAGER', 'HR', 'HELPLINE', 'VOLUNTEER'];
+        if (!allowedRoles.includes(role)) {
+            return res.status(400).json({ message: 'Invalid role selection' });
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Default password for manual creation (should be changed on first login)
+        const defaultPassword = 'Password@123';
+
+        const user = new User({
+            name,
+            email,
+            password: defaultPassword,
+            role,
+            phone,
+            city: 'Agartala', // Default city for now, or add to form
+            isActive: true
+        });
+
+        await user.save();
+
+        res.status(201).json({
+            success: true,
+            message: `User created as ${role}`,
+            user: { id: user._id, name: user.name, role: user.role }
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get All Volunteers (For Assignment)
+exports.getAllVolunteers = async (req, res) => {
+    try {
+        const volunteers = await User.find({ role: 'VOLUNTEER' })
+            .select('_id name email city phone availabilityStatus')
+            .lean();
+
+        res.status(200).json({
+            success: true,
+            count: volunteers.length,
+            volunteers
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // --- Dashboard & Stats ---
 
 exports.getDashboardStats = async (req, res) => {

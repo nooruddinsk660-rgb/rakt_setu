@@ -66,6 +66,8 @@ app.use('/api/v1/outreach', outreachRoutes);
 app.use('/api/v1/hr', hrRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/notification', notificationRoutes);
+app.use('/api/v1/users', require('./routes/user.routes'));
+app.use('/api/v1/operations', require('./routes/operations.routes'));
 
 // Start Jobs
 escalationJob.start();

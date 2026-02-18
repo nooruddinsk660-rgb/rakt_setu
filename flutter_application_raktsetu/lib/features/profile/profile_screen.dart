@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 import '../../shared/providers/theme_provider.dart';
 import '../../shared/components/app_button.dart'; // Though not strictly used, good to have if we replace buttons
+import '../../core/constants/role_constants.dart';
 import 'widgets/availability_switch.dart';
 import 'widgets/profile_info_card.dart';
 import 'widgets/profile_menu_item.dart';
+import 'user_repository.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -16,7 +18,102 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  String _name = 'Loading...';
+  String _email = '';
+  AppRole _role = AppRole.volunteer;
   bool _isAvailable = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final storage = ref.read(secureStorageProvider);
+    final userData = await storage.getUser();
+    final roleStr = await storage.getRole();
+    if (mounted) {
+      setState(() {
+        _name = userData['name'] ?? 'User';
+        _email = userData['email'] ?? '';
+        _role = AppRole.fromJson(roleStr ?? '');
+      });
+    }
+  }
+
+  void _showRoleRequestDialog(BuildContext context) {
+    AppRole? selectedRole;
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('Request Role Upgrade'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Select the role you wish to apply for:'),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<AppRole>(
+                  value: selectedRole,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Select Role',
+                  ),
+                  items: [AppRole.manager, AppRole.hr, AppRole.helpline]
+                      .map(
+                        (role) => DropdownMenuItem(
+                          value: role,
+                          child: Text(role.displayName),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) => setDialogState(() => selectedRole = val),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: selectedRole == null
+                    ? null
+                    : () async {
+                        try {
+                          Navigator.pop(context); // Close dialog
+                          // Implement call
+                          await ref
+                              .read(userRepositoryProvider)
+                              .requestRole(selectedRole!.toJson());
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Request for ${selectedRole?.displayName} submitted!',
+                                ),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
+                      },
+                child: const Text('Submit Request'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +125,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
         title: const Text('Profile & Settings'),
         actions: [TextButton(onPressed: () {}, child: const Text('Edit'))],
       ),
@@ -37,12 +143,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           children: [
             const SizedBox(height: 20),
             ProfileInfoCard(
-              name: 'Sarah Jenkins', // Mock data
-              role: 'Regional Manager',
-              location: 'New York, NY',
-              email: 'sarah.j@bloodconnect.org',
+              name: _name,
+              role: _role.displayName,
+              location:
+                  'Kolkata, IN', // Placeholder for now, or fetch from storage if added
+              email: _email,
               imageUrl:
-                  'https://lh3.googleusercontent.com/aida-public/AB6AXuCCzk1rVFKOphln0GQSWaSm6fuUGOCO25ezbn3CyvxDqpSqsmuDAa_rfwWWEtdHUGro9YOYrmhK_W9qvHIKcswnOumPXDdxhtLN1UEgdtNhhA0q10qAGwv9vpJt5IGUWaNXU6Hv8FQvh3CReCCIG8slr0syJoy2B2B98erPDNo0YL2eSpCgjRsHT3jRnw7b3lZWQWqGbaectOFqUZaMdQ0fVPfeql0XhQoW-mtUVbHDRxrkKdEqDhQYxlvtO63onL_irY-qLRao10-d',
+                  'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_name)}&background=random',
               onEdit: () {},
             ),
             const SizedBox(height: 24),
@@ -106,7 +213,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ProfileMenuItem(
                           title: 'Notifications',
                           icon: Icons.notifications,
-                          onTap: () => context.go('/notifications'),
+                          onTap: () => Future.microtask(
+                            () => context.go('/notifications'),
+                          ),
                         ),
                       ],
                     ),
@@ -115,6 +224,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
 
+            // ... (rest of account section) ...
             const SizedBox(height: 24),
 
             // Account
@@ -149,13 +259,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         const Divider(height: 1),
                         ProfileMenuItem(
+                          title: 'Request Role Upgrade',
+                          icon: Icons.upgrade,
+                          onTap: () => _showRoleRequestDialog(context),
+                        ),
+                        const Divider(height: 1),
+                        ProfileMenuItem(
                           title: 'Log Out',
                           icon: Icons.logout,
                           isDestructive: true,
                           onTap: () async {
                             await ref.read(authRepositoryProvider).logout();
                             if (context.mounted) {
-                              context.go('/login');
+                              Future.microtask(() => context.go('/login'));
                             }
                           },
                         ),
@@ -179,10 +295,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3, // Profile
         onTap: (index) {
-          if (index == 0) context.go('/dashboard');
+          if (index == 0) Future.microtask(() => context.go('/dashboard'));
           if (index == 1)
-            context.go('/helpline'); // Or operations/donors depending on role
-          if (index == 2) context.go('/notifications');
+            Future.microtask(
+              () => context.go('/helpline'),
+            ); // Or operations/donors depending on role
+          if (index == 2) Future.microtask(() => context.go('/notifications'));
           // index 3 is current
         },
         type: BottomNavigationBarType.fixed,

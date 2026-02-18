@@ -19,7 +19,12 @@ class OutreachCard extends StatelessWidget {
     this.stripColor = Colors.red, // Default primary
     required this.onCall,
     required this.onEmail,
+    required this.currentStatus,
+    required this.onStatusChange,
   });
+
+  final String currentStatus;
+  final Function(String) onStatusChange;
 
   Color _getTypeColor(bool isDark) {
     if (type == 'College') return Colors.blue;
@@ -95,11 +100,43 @@ class OutreachCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              title,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert),
+                                  onSelected: onStatusChange,
+                                  itemBuilder: (context) => [
+                                    if (currentStatus != 'NotContacted')
+                                      const PopupMenuItem(
+                                        value: 'NotContacted',
+                                        child: Text('Mark Not Contacted'),
+                                      ),
+                                    if (currentStatus != 'Pending')
+                                      const PopupMenuItem(
+                                        value: 'Pending',
+                                        child: Text('Mark Pending'),
+                                      ),
+                                    if (currentStatus != 'Successful')
+                                      const PopupMenuItem(
+                                        value: 'Successful',
+                                        child: Text('Mark Successful'),
+                                      ),
+                                    if (currentStatus != 'Cancelled')
+                                      const PopupMenuItem(
+                                        value: 'Cancelled',
+                                        child: Text('Mark Cancelled'),
+                                      ),
+                                  ],
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 4),
                             Row(

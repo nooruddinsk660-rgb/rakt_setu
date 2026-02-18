@@ -99,6 +99,15 @@ class HRScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
       ),
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
         title: const Text('HR Dashboard'),
         centerTitle: false,
         actions: [
@@ -118,61 +127,116 @@ class HRScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Lock Schedule
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor.withOpacity(0.1),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
+              // Volunteer List with Lock Toggle
+              Text(
+                'Manage Schedules',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              burnoutAsync.when(
+                loading: () => const AppLoader(),
+                error: (err, stack) => Text('Error: $err'),
+                data: (volunteers) {
+                  if (volunteers.isEmpty) {
+                    return const AppEmptyState(
+                      message: 'No volunteers found',
+                      icon: Icons.people_outline,
+                    );
+                  }
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: volunteers.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final volunteer = volunteers[index];
+                      // Defaulting to false if lock status logic isn't in backend response yet
+                      // ideally backend returns 'isScheduleLocked'
+                      final isLocked = volunteer['isScheduleLocked'] ?? false;
+
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
                             color: Theme.of(
                               context,
-                            ).primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.lock,
-                            color: Theme.of(context).primaryColor,
+                            ).dividerColor.withOpacity(0.1),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              'Lock Schedule',
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).primaryColor.withOpacity(0.1),
+                              child: Text((volunteer['name'] as String)[0]),
                             ),
-                            Text(
-                              'Freeze assignments',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(context).hintColor,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    volunteer['name'],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
+                                  Text(
+                                    volunteer['role'] ?? 'Volunteer',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: isLocked,
+                              onChanged: (val) async {
+                                // Optimistic UI update or refresh
+                                // For now, we'll just call the API and refresh
+                                try {
+                                  await ref
+                                      .read(hrRepositoryProvider)
+                                      .toggleLock(volunteer['_id']);
+                                  ref.refresh(
+                                    hrBurnoutRisksProvider,
+                                  ); // Refresh list
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          val
+                                              ? 'Schedule Locked'
+                                              : 'Schedule Unlocked',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to update: $e'),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    Switch(
-                      value: false,
-                      onChanged: (v) {
-                        // TODO: Implement global lock or per-user lock modal
-                      },
-                    ),
-                  ],
-                ),
+                      );
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 24),
 

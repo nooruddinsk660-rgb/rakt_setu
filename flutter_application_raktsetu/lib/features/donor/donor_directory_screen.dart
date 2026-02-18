@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../shared/components/app_loader.dart';
 import '../../shared/components/app_empty_state.dart';
 import 'widgets/donor_search_filter.dart';
@@ -23,15 +24,33 @@ class _DonorDirectoryScreenState extends ConsumerState<DonorDirectoryScreen> {
     };
   }
 
-  void _handleContact(String name, String phone) {
+  void _handleContact(String donorId, String name) {
     ContactVerificationModal.show(
       context,
       donorName: name,
-      onConfirm: () {
-        // In real app, decrypt phone and launch dialer
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Calling $name  ($phone)...')));
+      onConfirm: () async {
+        try {
+          final contact = await ref
+              .read(donorRepositoryProvider)
+              .getDonorContact(donorId, 'Urgent Request');
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Calling ${contact['name']} (${contact['phone']})...',
+                ),
+              ),
+            );
+            // In real app, launchUrl('tel:${contact['phone']}')
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to get contact: $e')),
+            );
+          }
+        }
       },
     );
   }
@@ -42,6 +61,15 @@ class _DonorDirectoryScreenState extends ConsumerState<DonorDirectoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -137,107 +165,19 @@ class _DonorDirectoryScreenState extends ConsumerState<DonorDirectoryScreen> {
                           'Unknown', // Backend doesn't support distance yet
                       bloodGroup: donor['bloodGroup'] ?? '',
                       lastDonated: lastDonated,
-                      phoneNumber: donor['phoneEncrypted'] ?? '******',
+                      phoneNumber: '******', // Hidden by default
                       isVerified:
                           true, // Assuming backend returns vetted donors
                       isAvailable: donor['availabilityStatus'] ?? true,
                       onContactTap: () => _handleContact(
+                        donor['_id'],
                         donor['name'] ?? 'Donor',
-                        donor['phoneEncrypted'] ?? '',
                       ),
                     );
                   },
                 );
               },
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddDonorDialog(context),
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  void _showAddDonorDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final cityController = TextEditingController();
-    String? selectedBloodGroup;
-    final formKey = GlobalKey<FormState>();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add Donor'),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                DropdownButtonFormField<String>(
-                  value: selectedBloodGroup,
-                  decoration: const InputDecoration(labelText: 'Blood Group'),
-                  items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => selectedBloodGroup = v,
-                  validator: (v) => v == null ? 'Required' : null,
-                ),
-                TextFormField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone'),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                TextFormField(
-                  controller: cityController,
-                  decoration: const InputDecoration(labelText: 'City'),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx);
-                try {
-                  await ref.read(donorRepositoryProvider).addDonor({
-                    'name': nameController.text.trim(),
-                    'bloodGroup': selectedBloodGroup,
-                    'phone': phoneController.text.trim(),
-                    'city': cityController.text.trim(),
-                    // lastDonationDate optional
-                  });
-                  ref.refresh(donorsProvider);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Donor added successfully')),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to add donor: $e')),
-                    );
-                  }
-                }
-              }
-            },
-            child: const Text('Add'),
           ),
         ],
       ),

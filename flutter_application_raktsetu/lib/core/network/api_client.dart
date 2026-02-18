@@ -5,6 +5,8 @@ import '../storage/secure_storage.dart';
 class ApiClient {
   final Dio _dio;
   final SecureStorage _storage;
+  bool _isRefreshing = false;
+
   static String get _baseUrl {
     if (kIsWeb) {
       return 'http://localhost:5000/api/v1';
@@ -24,7 +26,7 @@ class ApiClient {
         ),
       ) {
     _dio.interceptors.add(
-      InterceptorsWrapper(
+      QueuedInterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await _storage.getToken();
           if (token != null) {
@@ -34,23 +36,44 @@ class ApiClient {
         },
         onError: (DioException e, handler) async {
           if (e.response?.statusCode == 401) {
-            // Token might be expired, try to refresh
-            // Note: This is a simplified implementation.
-            // Real-world would need a lock to prevent multiple refreshes.
-            final refreshToken = await _storage.getRefreshToken();
-            if (refreshToken != null) {
-              try {
-                final response = await _dio.post(
-                  '/auth/refresh-token',
-                  data: {'refreshToken': refreshToken},
-                );
+            print('[ApiClient] 401 Error: ${e.requestOptions.path}');
 
-                final newToken = response.data['accessToken'];
-                await _storage.saveToken(newToken);
+            // If the path is login or refresh-token, don't try to refresh
+            if (e.requestOptions.path.contains('/auth/login') ||
+                e.requestOptions.path.contains('/auth/refresh-token')) {
+              return handler.next(e);
+            }
 
-                // Retry original request
+            try {
+              print('[ApiClient] Attempting token refresh...');
+              final refreshToken = await _storage.getRefreshToken();
+
+              if (refreshToken == null) {
+                print('[ApiClient] No refresh token found. Logging out.');
+                await _storage.clearAll();
+                return handler.next(e);
+              }
+
+              // Create a separate Dio instance for refresh to avoid interceptor loops
+              final tokenDio = Dio(BaseOptions(baseUrl: _baseUrl));
+
+              final response = await tokenDio.post(
+                '/auth/refresh-token',
+                data: {'refreshToken': refreshToken},
+              );
+
+              if (response.statusCode == 200) {
+                final newAccessToken = response.data['accessToken'];
+                print('[ApiClient] Token refresh successful.');
+
+                await _storage.saveToken(newAccessToken);
+                // Optionally update refresh token if API returns a new one
+                // await _storage.saveRefreshToken(response.data['refreshToken']);
+
+                // Retry original request with new token
                 final opts = e.requestOptions;
-                opts.headers['Authorization'] = 'Bearer $newToken';
+                opts.headers['Authorization'] = 'Bearer $newAccessToken';
+
                 final clonedRequest = await _dio.request(
                   opts.path,
                   options: Options(
@@ -61,14 +84,13 @@ class ApiClient {
                   data: opts.data,
                   queryParameters: opts.queryParameters,
                 );
+
                 return handler.resolve(clonedRequest);
-              } catch (refreshError) {
-                // Refresh failed, logout
-                await _storage.clearAll();
-                return handler.next(e);
               }
-            } else {
+            } catch (refreshError) {
+              print('[ApiClient] Token refresh failed: $refreshError');
               await _storage.clearAll();
+              return handler.next(e);
             }
           }
           return handler.next(e);
@@ -78,7 +100,11 @@ class ApiClient {
 
     if (kDebugMode) {
       _dio.interceptors.add(
-        LogInterceptor(requestBody: true, responseBody: true),
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          logPrint: (o) => debugPrint(o.toString()),
+        ),
       );
     }
   }

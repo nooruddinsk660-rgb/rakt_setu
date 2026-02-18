@@ -64,7 +64,7 @@ class RaktSetuApp extends ConsumerWidget {
             ),
           );
         };
-        return child!;
+        return child ?? const SizedBox.shrink();
       },
     );
   }

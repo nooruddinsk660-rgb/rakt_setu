@@ -5,6 +5,7 @@ import '../../shared/components/app_loader.dart';
 import '../../shared/components/app_empty_state.dart';
 import 'widgets/kanban_tab.dart';
 import 'widgets/outreach_card.dart';
+import 'widgets/outreach_filter_bar.dart';
 import 'outreach_provider.dart';
 
 class OutreachScreen extends ConsumerStatefulWidget {
@@ -30,39 +31,42 @@ class _OutreachScreenState extends ConsumerState<OutreachScreen> {
     final leadsAsync = ref.watch(outreachLeadsProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
+        title: const Text('Outreach Board'),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.refresh),
+              color: Theme.of(context).primaryColor,
+              onPressed: () {
+                ref.refresh(outreachLeadsProvider);
+              },
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Outreach Board',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.refresh),
-                      color: Theme.of(context).primaryColor,
-                      onPressed: () {
-                        ref.refresh(outreachLeadsProvider);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Filters
+            const OutreachFilterBar(),
+            const SizedBox(height: 8),
 
             // Tabs
             SingleChildScrollView(
@@ -75,6 +79,10 @@ class _OutreachScreenState extends ConsumerState<OutreachScreen> {
                   final status = tab['status'];
 
                   // Calculate count from provider data if available
+                  // Note: Provider now returns FILTERED leads.
+                  // If we want counts for *all* tabs relative to the *other* filters (like Type/Location),
+                  // we might need a separate provider or just accept that the counts reflect the current filtered set.
+                  // For now, let's use the filtered set counts.
                   int count = 0;
                   leadsAsync.whenData((leads) {
                     count = leads.where((l) => l['status'] == status).length;
@@ -151,6 +159,28 @@ class _OutreachScreenState extends ConsumerState<OutreachScreen> {
                             // Mock image for now
                             imageUrl: 'https://via.placeholder.com/150',
                             stripColor: _getStatusColor(lead['status']),
+                            currentStatus: lead['status'] ?? 'NotContacted',
+                            onStatusChange: (newStatus) async {
+                              try {
+                                await ref
+                                    .read(outreachRepositoryProvider)
+                                    .updateStatus(lead['_id'], newStatus);
+                                ref.refresh(outreachLeadsProvider);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Moved to $newStatus'),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed: $e')),
+                                  );
+                                }
+                              }
+                            },
                             onCall: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

@@ -1,33 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/components/app_button.dart';
 import 'widgets/hub_metric_card.dart';
 import 'widgets/quick_action_item.dart';
 import 'widgets/recent_activity_item.dart';
+import 'operations_provider.dart';
+import '../auth/auth_provider.dart';
+import '../../core/storage/secure_storage.dart';
+import '../../core/constants/role_constants.dart';
 
-class OperationsScreen extends StatelessWidget {
+class OperationsScreen extends ConsumerWidget {
   const OperationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(currentUserProvider);
+    final statsAsync = ref.watch(operationsOverviewProvider);
+
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Better background
+      appBar: AppBar(
+        title: const Text('Operations Hub'),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: BackButton(
+          color: Colors.black,
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              Future.microtask(() => context.go('/dashboard'));
+            }
+          },
+        ),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+        child: RefreshIndicator(
+          onRefresh: () async => ref.refresh(operationsOverviewProvider),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header (User Info)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
                     children: [
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.1),
                           border: Border.all(
                             color: Theme.of(
                               context,
@@ -36,214 +77,212 @@ class OperationsScreen extends StatelessWidget {
                           ),
                           image: const DecorationImage(
                             image: NetworkImage(
-                              'https://lh3.googleusercontent.com/aida-public/AB6AXuAi3X1SujkZ2aWiJ4kZ4D3DLVqtIC40NKhEe9HX1KMW8Um1KqR_nm_ZrTT0lFDHJ4LtNSy5Va4YprE5KveGaDx1YvJ4nj8AYv9tSNaQQG8B2PMuxaMIrQrc7uAwx4bAEFvcJThDqX1vsOv_SlLSlTGwbKO9YIE_NcxsFjcnkjKmBbSq5lZIXAxi6DGFexza2OIDZcEzJlkLDrdOSGHLwhmdNUWKvabIbbpERODxd-lCeVHE25cggndWmdGEWnonCHMYGW6sG0s0hrgF',
+                              'https://ui-avatars.com/api/?name=Manager&background=random',
                             ),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userAsync != null
+                                  ? AppRole.fromJson(
+                                      userAsync.role,
+                                    ).displayName.toUpperCase()
+                                  : 'STAFF',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Theme.of(context).primaryColor,
+                                    letterSpacing: 1.2,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              userAsync?.name ?? 'Operations Manager',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {}, // Settings or Profile link
+                        icon: const Icon(Icons.settings_outlined),
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Loaded Data
+                statsAsync.when(
+                  data: (stats) => Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'MANAGER',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: Theme.of(context).hintColor,
-                                  letterSpacing: 1.2,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                          Text(
-                            'Rahul Sharma',
+                            'Overview',
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Today',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Metrics Grid
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HubMetricCard(
+                              title: 'Assigned Camps',
+                              value: (stats['assignedCamps'] ?? 0).toString(),
+                              subValue: 'Active',
+                              icon: Icons.campaign,
+                              color: Colors.green,
+                              badgeText: 'Active',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: HubMetricCard(
+                              title: 'Workflow',
+                              value: (stats['workflowUrgent'] ?? 0).toString(),
+                              subValue: 'Urgent',
+                              icon: Icons.pending_actions,
+                              color: Colors.orange,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: HubMetricCard(
+                              title: 'Pending Pay',
+                              value: '₹${stats['pendingPay'] ?? 0}',
+                              icon: Icons.payments,
+                              color: Colors.blue,
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined),
-                    onPressed: () {},
+                  loading: () => const Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: Center(child: CircularProgressIndicator()),
                   ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Overview
-              Text(
-                'Overview',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Operations status for Oct 24, 2023',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).hintColor,
+                  error: (err, stack) => Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.red[700]),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Access Denied or Server Error. \nEnsure you have Manager permissions.',
+                            style: TextStyle(color: Colors.red[900]),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
 
-              // Metrics Grid
-              Row(
-                children: [
-                  Expanded(
-                    child: HubMetricCard(
-                      title: 'Assigned Camps',
-                      value: '3',
-                      subValue: 'Active',
-                      icon: Icons.campaign,
-                      color: Colors.green,
-                      badgeText: '+1 Today',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Row(
-                children: [
-                  Expanded(
-                    child: HubMetricCard(
-                      title: 'Workflow',
-                      value: '12',
-                      subValue: 'Urgent',
-                      icon: Icons.pending_actions,
-                      color: Colors.orange,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: HubMetricCard(
-                      title: 'Pending Pay',
-                      value: '₹ 4.5k',
-                      icon: Icons.payments,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ],
-              ),
+                const SizedBox(height: 32),
 
-              const SizedBox(height: 24),
-
-              // Quick Actions
-              Text(
-                'Quick Actions',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  QuickActionItem(
-                    label: 'New Camp',
-                    icon: Icons.add,
-                    onTap: () {
-                      // Add Camp navigation possibly
-                    },
+                // Quick Actions
+                Text(
+                  'Quick Actions',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                  QuickActionItem(
-                    label: 'Inventory',
-                    icon: Icons.inventory_2,
-                    onTap: () {},
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  QuickActionItem(
-                    label: 'Volunteer',
-                    icon: Icons.group_add,
-                    onTap: () {},
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      QuickActionItem(
+                        label: 'New Camp',
+                        icon: Icons.add_location_alt,
+                        onTap: () {
+                          Future.microtask(
+                            () => context.go('/camps'),
+                          ); // Navigate to Camp List
+                        },
+                      ),
+                      QuickActionItem(
+                        label: 'Inventory',
+                        icon: Icons.inventory_2,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Inventory Module: Feature Coming Soon',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      QuickActionItem(
+                        label: 'Volunteer',
+                        icon: Icons.group_add,
+                        onTap: () {
+                          Future.microtask(() => context.go('/hr'));
+                        },
+                      ),
+                      QuickActionItem(
+                        label: 'Reports',
+                        icon: Icons.bar_chart,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Reports Module: Feature Coming Soon',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  QuickActionItem(
-                    label: 'Report',
-                    icon: Icons.description,
-                    onTap: () {},
-                  ),
-                ],
-              ),
+                ),
 
-              const SizedBox(height: 24),
-
-              // Recent Activity
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Activity',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(onPressed: () {}, child: const Text('View All')),
-                ],
-              ),
-
-              RecentActivityItem(
-                title: 'Camp #102 Completed',
-                description:
-                    'Rohini Sector 14 drive marked as success. 45 units collected.',
-                timeAgo: '10m',
-                type: ActivityType.success,
-              ),
-              RecentActivityItem(
-                title: 'Reimbursement Request',
-                description: 'Volunteer Amit requested ₹350 for travel.',
-                timeAgo: '1h',
-                type: ActivityType.info,
-                onApprove: () {},
-                onDecline: () {},
-              ),
-              RecentActivityItem(
-                title: 'Low Inventory Alert',
-                description:
-                    'Refreshment kits (Type B) running low at Warehouse 2.',
-                timeAgo: '2h',
-                type: ActivityType.warning,
-              ),
-
-              const SizedBox(height: 80),
-            ],
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 0, // Operations Hub
-        onDestinationSelected: (index) {
-          if (index == 0) {
-            // Already on Hub
-          } else if (index == 1) {
-            context.go('/camp-details'); // Or a camps list if we had one
-          } else if (index == 2) {
-            context.go('/helpline');
-          } else if (index == 3) {
-            context.go('/profile');
-          }
-        },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard), label: 'Hub'),
-          NavigationDestination(
-            icon: Icon(Icons.campaign_outlined),
-            selectedIcon: Icon(Icons.campaign),
-            label: 'Camps',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.assignment_outlined),
-            selectedIcon: Icon(Icons.assignment),
-            label: 'Requests',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

@@ -26,4 +26,19 @@ class DonorRepository {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> getDonorContact(
+    String id,
+    String purpose,
+  ) async {
+    try {
+      final response = await _client.post(
+        '/donor/$id/contact',
+        data: {'purpose': purpose},
+      );
+      return response.data['contact'];
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

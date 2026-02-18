@@ -14,6 +14,8 @@ router.put('/schedule', authenticate, hrController.updateMySchedule);
 const HR_ROLES = ['ADMIN', 'HELPLINE'];
 
 router.put('/schedule-lock/:userId', authenticate, authorize(HR_ROLES), hrController.toggleLock);
+router.post('/members', authenticate, authorize(['ADMIN', 'HR']), hrController.addTeamMember);
+router.get('/volunteers', authenticate, authorize(HR_ROLES), hrController.getAllVolunteers);
 
 // --- Dashboard & Stats ---
 

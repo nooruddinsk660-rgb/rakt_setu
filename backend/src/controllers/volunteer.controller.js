@@ -60,6 +60,28 @@ exports.updateStatus = async (req, res) => {
             message: 'Status updated successfully',
             profile
         });
+        res.status(200).json({
+            success: true,
+            message: 'Status updated successfully',
+            profile
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const profile = await VolunteerProfile.findOne({ userId }).populate('userId', 'name email city phone');
+
+        if (!profile) {
+            return res.status(404).json({ message: 'Volunteer profile not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            profile
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
