@@ -6,7 +6,12 @@ import 'widgets/camp_timeline_step.dart';
 import 'widgets/team_member_card.dart';
 
 class CampScreen extends StatelessWidget {
-  const CampScreen({super.key});
+  final Map<String, dynamic> camp;
+
+  const CampScreen({
+    super.key,
+    this.camp = const {}, // Default empty map to avoid errors if null
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,19 +19,19 @@ class CampScreen extends StatelessWidget {
       extendBodyBehindAppBar:
           true, // For the gradient effect if needed, but design has solid white/dark
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           children: [
             Text(
-              'Camp #4092',
+              'Camp #${camp['_id']?.toString().substring(0, 6) ?? '...'}',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.normal,
-                color: Colors.grey,
+                color: Theme.of(context).hintColor,
               ),
             ),
             Text(
-              'Connaught Place',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              camp['location']?.toString().split(',')[0] ?? 'Camp Details',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -55,12 +60,15 @@ class CampScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Summary Card
-                    const CampSummaryCard(
-                      campName: 'Corporate Drive',
-                      location: '12th Floor, DLF Tower, ND',
-                      date: 'OCT 24',
-                      time: '09:00 AM - 02:00 PM',
-                      estimatedDonors: 'Est. 120 Donors',
+                    CampSummaryCard(
+                      campName: camp['organizationName'] ?? 'Unknown Camp',
+                      location: camp['location'] ?? 'Unknown Location',
+                      date: camp['eventDate'] != null
+                          ? camp['eventDate'].toString().split(' ')[0]
+                          : 'Date TBD',
+                      time: '09:00 AM - 02:00 PM', // Hardcoded for now
+                      estimatedDonors:
+                          'Est. ${camp['donationCount'] ?? 0} Donors',
                     ),
                     const SizedBox(height: 24),
 
@@ -177,7 +185,7 @@ class CampScreen extends StatelessWidget {
                             style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
+                                  color: Theme.of(context).hintColor,
                                   letterSpacing: 1.2,
                                 ),
                           ),

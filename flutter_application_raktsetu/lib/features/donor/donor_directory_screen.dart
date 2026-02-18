@@ -5,6 +5,7 @@ import '../../shared/components/app_empty_state.dart';
 import 'widgets/donor_search_filter.dart';
 import 'widgets/donor_card.dart';
 import 'widgets/contact_verification_modal.dart';
+import 'donor_provider.dart';
 
 class DonorDirectoryScreen extends ConsumerStatefulWidget {
   const DonorDirectoryScreen({super.key});
@@ -15,120 +16,52 @@ class DonorDirectoryScreen extends ConsumerStatefulWidget {
 }
 
 class _DonorDirectoryScreenState extends ConsumerState<DonorDirectoryScreen> {
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _donors = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMockData(); // Simulate initial fetch
+  void _handleSearch(String bloodGroup, String location) {
+    ref.read(donorFilterProvider.notifier).state = {
+      if (bloodGroup.isNotEmpty) 'bloodGroup': bloodGroup,
+      if (location.isNotEmpty) 'city': location,
+    };
   }
 
-  Future<void> _loadMockData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _donors = [
-          {
-            'name': 'John Doe',
-            'location': 'Downtown Metro',
-            'distance': '2.5km',
-            'bloodGroup': 'O+',
-            'lastDonated': '2mo ago',
-            'phoneNumber': '98XXXX4321',
-            'isVerified': true,
-            'isAvailable': true,
-          },
-          {
-            'name': 'Alex Smith',
-            'location': 'North Hills',
-            'distance': '4.1km',
-            'bloodGroup': 'A-',
-            'lastDonated': 'Available Now',
-            'phoneNumber': '21XXXX9876',
-            'isVerified': false,
-            'isAvailable': true,
-          },
-          {
-            'name': 'Maria K.',
-            'location': 'Westside',
-            'distance': '8km',
-            'bloodGroup': 'O+',
-            'lastDonated': '1yr ago',
-            'phoneNumber': '55XXXX1234',
-            'isVerified': true,
-            'isAvailable': true,
-          },
-          {
-            'name': 'Robert T.',
-            'location': 'East Bay',
-            'distance': '12km',
-            'bloodGroup': 'AB+',
-            'lastDonated': 'Recently',
-            'phoneNumber': '44XXXX5555',
-            'isVerified': false,
-            'isAvailable': false,
-          },
-        ];
-      });
-    }
-  }
-
-  void _handleSearch(String bloodGroup, String location) async {
-    // Implement filtering logic or API call here
-    setState(() {
-      _isLoading = true;
-    });
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        // Just shuffling/filtering mock data for demo
-        _donors = _donors
-            .where((d) => bloodGroup.isEmpty || d['bloodGroup'] == bloodGroup)
-            .toList();
-      });
-    }
-  }
-
-  void _handleContact(String name) {
+  void _handleContact(String name, String phone) {
     ContactVerificationModal.show(
       context,
       donorName: name,
       onConfirm: () {
+        // In real app, decrypt phone and launch dialer
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Calling $name...')));
+        ).showSnackBar(SnackBar(content: Text('Calling $name  ($phone)...')));
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final donorsAsync = ref.watch(donorsProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Donor Search', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Donor Search',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
             Text(
               'BloodConnect Secure Directory',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
-              // Show advanced filters
+              ref.refresh(donorsProvider);
             },
           ),
         ],
@@ -145,55 +78,166 @@ class _DonorDirectoryScreenState extends ConsumerState<DonorDirectoryScreen> {
                   'Nearby Donors',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: Theme.of(context).hintColor,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                donorsAsync.maybeWhen(
+                  data: (donors) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).disabledColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${donors.length} Found',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).disabledColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    '${_donors.length} Found',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  orElse: () => const SizedBox.shrink(),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const AppLoader()
-                : _donors.isEmpty
-                ? const AppEmptyState(
+            child: donorsAsync.when(
+              loading: () => const AppLoader(),
+              error: (err, stack) => AppEmptyState(
+                message: 'Error loading donors',
+                subMessage: err.toString(),
+                icon: Icons.error_outline,
+              ),
+              data: (donors) {
+                if (donors.isEmpty) {
+                  return const AppEmptyState(
                     message: 'No donors found',
                     icon: Icons.search_off,
                     subMessage: 'Try adjusting your filters',
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: _donors.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
-                      final donor = _donors[index];
-                      return DonorCard(
-                        name: donor['name'],
-                        location: donor['location'],
-                        distance: donor['distance'],
-                        bloodGroup: donor['bloodGroup'],
-                        lastDonated: donor['lastDonated'],
-                        phoneNumber: donor['phoneNumber'],
-                        isVerified: donor['isVerified'],
-                        isAvailable: donor['isAvailable'],
-                        onContactTap: () => _handleContact(donor['name']),
-                      );
-                    },
-                  ),
+                  );
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: donors.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final donor = donors[index];
+                    final eventDate =
+                        DateTime.tryParse(donor['lastDonationDate'] ?? '') ??
+                        DateTime.now();
+                    final lastDonated =
+                        '${eventDate.day}/${eventDate.month}/${eventDate.year}';
+
+                    return DonorCard(
+                      name: donor['name'] ?? 'Unknown',
+                      location: donor['city'] ?? 'Unknown City',
+                      distance:
+                          'Unknown', // Backend doesn't support distance yet
+                      bloodGroup: donor['bloodGroup'] ?? '',
+                      lastDonated: lastDonated,
+                      phoneNumber: donor['phoneEncrypted'] ?? '******',
+                      isVerified:
+                          true, // Assuming backend returns vetted donors
+                      isAvailable: donor['availabilityStatus'] ?? true,
+                      onContactTap: () => _handleContact(
+                        donor['name'] ?? 'Donor',
+                        donor['phoneEncrypted'] ?? '',
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddDonorDialog(context),
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _showAddDonorDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
+    final cityController = TextEditingController();
+    String? selectedBloodGroup;
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Donor'),
+        content: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                DropdownButtonFormField<String>(
+                  value: selectedBloodGroup,
+                  decoration: const InputDecoration(labelText: 'Blood Group'),
+                  items: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => selectedBloodGroup = v,
+                  validator: (v) => v == null ? 'Required' : null,
+                ),
+                TextFormField(
+                  controller: phoneController,
+                  decoration: const InputDecoration(labelText: 'Phone'),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                TextFormField(
+                  controller: cityController,
+                  decoration: const InputDecoration(labelText: 'City'),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(ctx);
+                try {
+                  await ref.read(donorRepositoryProvider).addDonor({
+                    'name': nameController.text.trim(),
+                    'bloodGroup': selectedBloodGroup,
+                    'phone': phoneController.text.trim(),
+                    'city': cityController.text.trim(),
+                    // lastDonationDate optional
+                  });
+                  ref.refresh(donorsProvider);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Donor added successfully')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to add donor: $e')),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Add'),
           ),
         ],
       ),

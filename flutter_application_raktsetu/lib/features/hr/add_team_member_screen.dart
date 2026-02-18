@@ -5,6 +5,7 @@ import '../../core/utils/validators.dart';
 import '../../shared/components/app_button.dart';
 import '../../shared/components/app_text_field.dart';
 import 'hr_repository.dart';
+import 'hr_provider.dart';
 
 class AddTeamMemberScreen extends ConsumerStatefulWidget {
   const AddTeamMemberScreen({super.key});
@@ -73,12 +74,12 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      // backgroundColor: Colors.grey[50], // Removed hardcoded background
       appBar: AppBar(
         title: const Text('Add Team Member'),
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white, // Removed
         elevation: 0,
-        foregroundColor: Colors.black,
+        // foregroundColor: Colors.black, // Removed
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -87,11 +88,8 @@ class _AddTeamMemberScreenState extends ConsumerState<AddTeamMemberScreen> {
             constraints: const BoxConstraints(maxWidth: 600),
             child: Card(
               elevation: 0,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
-              ),
+              // color: Colors.white, // Removed
+              // shape: ... // Removed
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Form(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LightTheme {
-  static const Color primaryColor = Color(0xFFC1121F);
+  static const Color primaryColor = Color(0xFFC72929);
   static const Color backgroundColor = Color(0xFFFFFFFF);
   static const Color surfaceColor = Color(0xFFFFFFFF);
   static const Color errorColor = Color(0xFFD32F2F);
@@ -13,6 +14,7 @@ class LightTheme {
       brightness: Brightness.light,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
+      textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
         secondary: primaryColor,
@@ -32,7 +34,10 @@ class LightTheme {
           foregroundColor: onPrimary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
           elevation: 2,
         ),
       ),
@@ -64,7 +69,7 @@ class LightTheme {
         color: surfaceColor,
         elevation: 4,
         shadowColor: const Color(0x1F000000),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         margin: EdgeInsets.zero,
       ),
     );

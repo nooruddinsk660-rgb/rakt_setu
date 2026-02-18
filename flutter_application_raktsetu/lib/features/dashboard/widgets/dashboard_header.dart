@@ -20,6 +20,12 @@ class DashboardHeader extends StatelessWidget {
         children: [
           Row(
             children: [
+              IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+              const SizedBox(width: 8),
               Container(
                 width: 40,
                 height: 40,

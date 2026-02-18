@@ -12,6 +12,7 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/donor/donor_directory_screen.dart';
 import '../features/helpline/helpline_screen.dart';
 import '../features/camp/camp_screen.dart';
+import '../features/camp/camp_list_screen.dart';
 import '../features/outreach/outreach_screen.dart';
 import '../features/hr/hr_screen.dart';
 import '../features/hr/add_team_member_screen.dart';
@@ -34,6 +35,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
         path: '/account-locked',
         builder: (context, state) => const AccountLockedScreen(),
       ),
@@ -50,8 +55,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HelplineScreen(),
       ),
       GoRoute(
+        path: '/camps',
+        builder: (context, state) => const CampListScreen(),
+      ),
+      GoRoute(
         path: '/camp-details',
-        builder: (context, state) => const CampScreen(),
+        builder: (context, state) {
+          final camp = state.extra as Map<String, dynamic>? ?? {};
+          return CampScreen(camp: camp);
+        },
       ),
       GoRoute(
         path: '/outreach',

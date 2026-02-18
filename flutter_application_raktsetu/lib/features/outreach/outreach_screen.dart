@@ -1,68 +1,33 @@
 import 'package:flutter/material.dart';
-import '../../shared/components/app_text_field.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../shared/components/app_loader.dart';
+import '../../shared/components/app_empty_state.dart';
 import 'widgets/kanban_tab.dart';
 import 'widgets/outreach_card.dart';
+import 'outreach_provider.dart';
 
-class OutreachScreen extends StatefulWidget {
+class OutreachScreen extends ConsumerStatefulWidget {
   const OutreachScreen({super.key});
 
   @override
-  State<OutreachScreen> createState() => _OutreachScreenState();
+  ConsumerState<OutreachScreen> createState() => _OutreachScreenState();
 }
 
-class _OutreachScreenState extends State<OutreachScreen> {
+class _OutreachScreenState extends ConsumerState<OutreachScreen> {
   int _selectedTabIndex = 0;
-  final _searchController = TextEditingController();
 
+  // Tabs matching backend status enum or logic
   final List<Map<String, dynamic>> _tabs = [
-    {'title': 'Not Contacted', 'count': 2, 'status': 'not_contacted'},
-    {'title': 'Pending', 'count': 1, 'status': 'pending'},
-    {'title': 'Successful', 'count': 5, 'status': 'successful'},
-    {'title': 'Cancelled', 'count': 1, 'status': 'cancelled'},
+    {'title': 'Not Contacted', 'status': 'NotContacted'},
+    {'title': 'Pending', 'status': 'Pending'},
+    {'title': 'Successful', 'status': 'Successful'},
+    {'title': 'Cancelled', 'status': 'Cancelled'},
   ];
-
-  final List<Map<String, dynamic>> _leads = [
-    {
-      'title': 'Apex University',
-      'location': 'New Delhi',
-      'type': 'College',
-      'imageUrl':
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuATaMsudhsYmlboJzjY5pwUFPJqD2ltaq3rn32PlEYa0J-maprf039xZGHdNsao_ZLEk1l2N8b6WjcgCn3AKrcxsg0ZpVmYp6hSoEBc2EnRga3SBlk-BjH5-gNQuNVXKMp_HZoDqfBORaH3AsyXxIODO1z4s8VlOt8dwfwjGsvMPccwfdZapaiVxW_2K7qQeB_DGTpGInnjbnEpAbZD4qwmCe_mKn6O6DjKA9tV3JIJhAVaNAK4kj__-LnXNyfQ5HBw2xyTSiCowLjY',
-      'status': 'not_contacted',
-      'stripColor': Colors.blue,
-    },
-    {
-      'title': 'TechSolutions Park',
-      'location': 'Gurgaon, Cyber City',
-      'type': 'Corporate',
-      'imageUrl':
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuDYNDzfOPlEnmKO8YiqEXPlaJspwReiujRoBNbExwXAyl0QAbYQKs5Kzw6EqoIMtHYU1Wico4H21MwvT9wHmTz3gw2PvvUqiaO6PZHNplHmagEFxbVVcKyJojKdHJZzHNfSCibYR6wjrXg9EOrYHZ08ScDVFDXxnSN56ICvuBFpKNzVyWiKmzq6iwlgzMKbBG71HtbR3DUpDg0ObVlN8oU3UR5zkZ13_zWHZ5qSZku39HsBYziNQ1THIX7NNX6JtPBP0BuNRBZB_9zM',
-      'status': 'not_contacted',
-      'stripColor': Colors.purple,
-    },
-    {
-      'title': 'City Mall',
-      'location': 'Saket',
-      'type': 'Corporate',
-      'imageUrl':
-          'https://lh3.googleusercontent.com/aida-public/AB6AXuAhgJREtWJe7hIMFt1idLkzZIxXyRNAyIg3flIyhDzlGze62jXlsevo7PHyDY7QLSDR466mpXyV1OysIhcQBfboIm5UnczTnEzJgR0p9_65SgT5kT7MHwXnrfI1u9V-AythBW81Jm8pv3ZN2U3AkUW4953HGyExWizPmGDSX5Dc3V06C3kXzE3_uqrZQqY2c2pBQgBJQGdQbo6EEzB8vehHAOw6lisHJXkpMtVSUUOllAyvDpFyuKuubVMaJdDsz33ARciOm09sJQsE',
-      'status': 'pending',
-      'stripColor': Colors.orange,
-    },
-  ];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final selectedStatus = _tabs[_selectedTabIndex]['status'];
-    final filteredLeads = _leads
-        .where((lead) => lead['status'] == selectedStatus)
-        .toList();
+    final leadsAsync = ref.watch(outreachLeadsProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -88,9 +53,11 @@ class _OutreachScreenState extends State<OutreachScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.search),
+                      icon: const Icon(Icons.refresh),
                       color: Theme.of(context).primaryColor,
-                      onPressed: () {},
+                      onPressed: () {
+                        ref.refresh(outreachLeadsProvider);
+                      },
                     ),
                   ),
                 ],
@@ -105,9 +72,17 @@ class _OutreachScreenState extends State<OutreachScreen> {
                 children: _tabs.asMap().entries.map((entry) {
                   final index = entry.key;
                   final tab = entry.value;
+                  final status = tab['status'];
+
+                  // Calculate count from provider data if available
+                  int count = 0;
+                  leadsAsync.whenData((leads) {
+                    count = leads.where((l) => l['status'] == status).length;
+                  });
+
                   return KanbanTab(
                     title: tab['title'],
-                    count: tab['count'],
+                    count: count,
                     isSelected: _selectedTabIndex == index,
                     onTap: () {
                       setState(() {
@@ -123,118 +98,234 @@ class _OutreachScreenState extends State<OutreachScreen> {
 
             // Content
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  // Column Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: leadsAsync.when(
+                loading: () => const AppLoader(),
+                error: (err, stack) => AppEmptyState(
+                  message: 'Error loading leads',
+                  subMessage: err.toString(),
+                  icon: Icons.error_outline,
+                ),
+                data: (leads) {
+                  final selectedStatus = _tabs[_selectedTabIndex]['status'];
+                  final filteredLeads = leads
+                      .where((lead) => lead['status'] == selectedStatus)
+                      .toList();
+
+                  if (filteredLeads.isEmpty) {
+                    return const AppEmptyState(
+                      message: 'No leads in this stage',
+                      icon: Icons.inbox,
+                    );
+                  }
+
+                  return ListView(
+                    padding: const EdgeInsets.all(20),
                     children: [
-                      Text(
-                        _tabs[_selectedTabIndex]['title']
-                            .toString()
-                            .toUpperCase(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.sort, size: 16),
-                        label: const Text(
-                          'SORT',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(60, 30),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  ...filteredLeads.map(
-                    (lead) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: OutreachCard(
-                        title: lead['title'],
-                        location: lead['location'],
-                        type: lead['type'],
-                        imageUrl: lead['imageUrl'],
-                        stripColor:
-                            lead['stripColor'] ??
-                            Theme.of(context).primaryColor,
-                        onCall: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Calling ${lead['title']}...'),
-                            ),
-                          );
-                        },
-                        onEmail: () {},
-                      ),
-                    ),
-                  ),
-
-                  // Add New Lead Button
-                  InkWell(
-                    onTap: () {
-                      // Navigate to add lead
-                    },
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context).dividerColor,
-                          width: 2,
-                          style: BorderStyle
-                              .solid, // Dashed not natively supported easily without pkg, solid fine for now
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      // Column Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                           Text(
-                            'Add New Lead',
-                            style: TextStyle(
-                              color: Theme.of(context).hintColor,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            _tabs[_selectedTabIndex]['title']
+                                .toString()
+                                .toUpperCase(),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).hintColor,
+                                  letterSpacing: 1.2,
+                                ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
+                      const SizedBox(height: 12),
+
+                      ...filteredLeads.map((lead) {
+                        final poc = lead['pocDetails'] ?? {};
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: OutreachCard(
+                            title: lead['organizationName'] ?? 'Unknown Org',
+                            location: lead['location'] ?? 'Unknown Location',
+                            type: lead['type'] ?? 'General',
+                            // Mock image for now
+                            imageUrl: 'https://via.placeholder.com/150',
+                            stripColor: _getStatusColor(lead['status']),
+                            onCall: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Calling ${poc['name'] ?? 'POC'}...',
+                                  ),
+                                ),
+                              );
+                            },
+                            onEmail: () {},
+                          ),
+                        );
+                      }),
+                    ],
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => _showCreateLeadDialog(context),
         backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: 0,
+        onDestinationSelected: (index) {
+          if (index == 0) context.go('/dashboard');
+          if (index == 1) context.go('/donors');
+          if (index == 2) context.go('/helpline');
+          if (index == 3) context.go('/profile');
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.grid_view),
+            label: 'Dashboard',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.groups_outlined),
+            label: 'Donors',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.assignment_outlined),
+            label: 'Requests',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
+  }
+
+  void _showCreateLeadDialog(BuildContext context) {
+    final orgController = TextEditingController();
+    final pocNameController = TextEditingController();
+    final pocPhoneController = TextEditingController();
+    final purposeController = TextEditingController();
+    final locationController = TextEditingController();
+    String selectedType = 'Corporate'; // Default
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('New Outreach Lead'),
+        content: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: orgController,
+                  decoration: const InputDecoration(
+                    labelText: 'Organization Name',
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                TextFormField(
+                  controller: locationController,
+                  decoration: const InputDecoration(labelText: 'Location'),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                DropdownButtonFormField<String>(
+                  value: selectedType,
+                  decoration: const InputDecoration(labelText: 'Type'),
+                  items: ['Corporate', 'College', 'Residential', 'Other']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => selectedType = v!,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'POC Details',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextFormField(
+                  controller: pocNameController,
+                  decoration: const InputDecoration(labelText: 'POC Name'),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                TextFormField(
+                  controller: pocPhoneController,
+                  decoration: const InputDecoration(labelText: 'POC Phone'),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                TextFormField(
+                  controller: purposeController,
+                  decoration: const InputDecoration(labelText: 'Purpose'),
+                  maxLines: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(ctx);
+                try {
+                  await ref.read(outreachRepositoryProvider).createLead({
+                    'organizationName': orgController.text.trim(),
+                    'location': locationController.text.trim(),
+                    'type': selectedType,
+                    'pocDetails': {
+                      'name': pocNameController.text.trim(),
+                      'phone': pocPhoneController.text.trim(),
+                    },
+                    'purpose': purposeController.text.trim(),
+                  });
+                  ref.refresh(outreachLeadsProvider);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Lead created successfully'),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to create lead: $e')),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'NotContacted':
+        return Colors.blue;
+      case 'Pending':
+        return Colors.orange;
+      case 'Successful':
+        return Colors.green;
+      case 'Cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 }

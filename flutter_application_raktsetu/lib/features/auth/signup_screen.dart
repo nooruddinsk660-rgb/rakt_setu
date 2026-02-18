@@ -19,8 +19,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _roleController = TextEditingController(text: 'donor'); // Default role
+  final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _roleController = TextEditingController(
+    text: 'VOLUNTEER',
+  ); // Default role to valid enum
+  String? _selectedBloodGroup;
   bool _isLoading = false;
+
+  final List<String> _bloodGroups = [
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-',
+  ];
 
   @override
   void dispose() {
@@ -28,6 +44,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _phoneController.dispose();
+    _cityController.dispose();
     _roleController.dispose();
     super.dispose();
   }
@@ -42,7 +60,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               _nameController.text.trim(),
               _emailController.text.trim(),
               _passwordController.text,
-              _roleController.text.trim(),
+              _roleController.text
+                  .trim(), // Consider making this a dropdown too if needed
+              _phoneController.text.trim(),
+              _cityController.text.trim(),
+              _selectedBloodGroup!,
             );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -67,12 +89,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Light background for contrast
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/login'),
         ),
       ),
@@ -84,11 +105,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               constraints: const BoxConstraints(maxWidth: 400),
               child: Card(
                 elevation: 0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: Colors.grey.shade200),
-                ),
                 child: Padding(
                   padding: const EdgeInsets.all(32.0),
                   child: Form(
@@ -100,7 +116,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         const Icon(
                           Icons.bloodtype,
                           size: 48,
-                          color: Color(0xFFC1121F), // Primary Red
+                          color: Color(0xFFC72929),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -108,15 +124,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFFC1121F),
+                                color: Theme.of(context).primaryColor,
                               ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Join the RaktSetu community',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey[600]),
+                          style: Theme.of(context).textTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
@@ -145,6 +160,44 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           prefixIcon: Icons.lock_outline,
                           obscureText: true,
                           validator: Validators.password,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedBloodGroup,
+                          decoration: InputDecoration(
+                            labelText: 'Blood Group',
+                            prefixIcon: const Icon(Icons.bloodtype_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          items: _bloodGroups.map((bg) {
+                            return DropdownMenuItem(value: bg, child: Text(bg));
+                          }).toList(),
+                          onChanged: (v) =>
+                              setState(() => _selectedBloodGroup = v),
+                          validator: (v) =>
+                              v == null ? 'Select Blood Group' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        AppTextField(
+                          controller: _phoneController,
+                          label: 'Phone Number',
+                          hint: 'Enter your phone number',
+                          prefixIcon: Icons.phone,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) => value!.isEmpty
+                              ? 'Please enter phone number'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        AppTextField(
+                          controller: _cityController,
+                          label: 'City',
+                          hint: 'Enter your city',
+                          prefixIcon: Icons.location_city,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Please enter city' : null,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(

@@ -170,12 +170,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         Icon(
                           Icons.notifications_off_outlined,
                           size: 48,
-                          color: Colors.grey.shade300,
+                          color: Theme.of(context).disabledColor,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No notifications',
-                          style: TextStyle(color: Colors.grey.shade500),
+                          style: TextStyle(color: Theme.of(context).hintColor),
                         ),
                       ],
                     ),
@@ -190,8 +190,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         onTap: (index) {
           if (index == 0) context.go('/dashboard');
           if (index == 1) context.go('/helpline');
+          if (index == 1) context.go('/helpline');
           // index 2 is current
-          // index 3 profile
+          if (index == 3) context.go('/profile');
         },
         type: BottomNavigationBarType.fixed,
         items: const [

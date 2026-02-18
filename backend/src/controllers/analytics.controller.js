@@ -49,6 +49,12 @@ exports.getAnalytics = async (req, res) => {
             ? ((completedRequests / totalRequests) * 100).toFixed(2)
             : 0;
 
+        // 6. Recent Requests (for Activity Feed)
+        const recentRequests = await HelplineRequest.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select('requestType status createdAt location'); // Select fields needed for UI
+
         res.status(200).json({
             success: true,
             analytics: {
@@ -58,7 +64,8 @@ exports.getAnalytics = async (req, res) => {
                 avgResponseTimeMinutes: avgResponseTime,
                 taskCompletionRate: `${taskCompletionRate}%`,
                 totalRequests,
-                completedRequests
+                completedRequests,
+                recentRequests // Added this
             }
         });
 

@@ -7,11 +7,11 @@ class ApiClient {
   final SecureStorage _storage;
   static String get _baseUrl {
     if (kIsWeb) {
-      return 'http://localhost:5000/api';
+      return 'http://localhost:5000/api/v1';
     }
     // For Android Emulator, use 10.0.2.2
     // For iOS Simulator, use localhost
-    return 'http://10.0.2.2:5000/api';
+    return 'http://10.0.2.2:5000/api/v1';
   }
 
   ApiClient(this._storage)

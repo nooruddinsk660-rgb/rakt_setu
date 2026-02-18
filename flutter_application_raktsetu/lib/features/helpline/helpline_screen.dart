@@ -1,57 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/components/app_text_field.dart';
 import 'widgets/helpline_filter_bar.dart';
 import 'widgets/helpline_request_card.dart';
+import 'helpline_provider.dart';
 
-class HelplineScreen extends StatefulWidget {
+class HelplineScreen extends ConsumerStatefulWidget {
   const HelplineScreen({super.key});
 
   @override
-  State<HelplineScreen> createState() => _HelplineScreenState();
+  ConsumerState<HelplineScreen> createState() => _HelplineScreenState();
 }
 
-class _HelplineScreenState extends State<HelplineScreen> {
+class _HelplineScreenState extends ConsumerState<HelplineScreen> {
   final _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> _requests = [
-    {
-      'patientName': 'Rohan Gupta',
-      'hospital': 'AIIMS Trauma Center, New Delhi',
-      'timeAgo': '20m ago',
-      'bloodGroup': 'AB+',
-      'statusText': '2 Donors arranged',
-      'urgency': UrgencyLevel.critical,
-      'primaryActionLabel': 'Assign Donor',
-    },
-    {
-      'patientName': 'Priya Sharma',
-      'hospital': 'Max Hospital, Saket',
-      'timeAgo': '1h ago',
-      'bloodGroup': 'O-',
-      'statusText': 'Verifying requirement',
-      'urgency': UrgencyLevel.moderate,
-      'primaryActionLabel': 'View Details',
-    },
-    {
-      'patientName': 'Amit Verma',
-      'hospital': 'Fortis Escorts, Okhla',
-      'timeAgo': '2h ago',
-      'bloodGroup': 'B+',
-      'statusText': 'Needs verification',
-      'urgency': UrgencyLevel.high,
-      'primaryActionLabel': 'Verify',
-    },
-    {
-      'patientName': 'Suresh Kumar',
-      'hospital': 'Apollo Hospital, Sarita Vihar',
-      'timeAgo': '5h ago',
-      'bloodGroup': 'A+',
-      'statusText': 'Donation complete',
-      'urgency': UrgencyLevel.fulfilled,
-      'primaryActionLabel': 'Details',
-    },
-  ];
+  Future<void> _handleRequestAction(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> req,
+  ) async {
+    final currentStatus = req['status'] ?? 'Pending';
+    final id = req['_id'];
+
+    if (currentStatus == 'Pending') {
+      // Assign to self or trigger assignment logic
+      // For now, simpler flow: Auto-assign to self (if backend allows) or just move to Assigned
+      // Backend createRequest does smart assignment. If Pending, it means no one found?
+      // Let's assume this button means "I accept this request"
+      // But we need to know if the backend supports "pick up".
+      // Backend updateStatus allows moving to Assigned? No, usually create -> assigned.
+      // If Pending, maybe we can move to Assigned manually?
+      // Let's try updating to 'Assigned'.
+      await _updateStatus(context, ref, id, 'Assigned');
+    } else if (currentStatus == 'Assigned') {
+      // Move to InProgress
+      await _updateStatus(context, ref, id, 'InProgress');
+    } else if (currentStatus == 'InProgress') {
+      // Move to Completed - Requires Remark
+      _showCompletionDialog(context, ref, id);
+    }
+  }
+
+  Future<void> _updateStatus(
+    BuildContext context,
+    WidgetRef ref,
+    String id,
+    String status, {
+    String? remark,
+  }) async {
+    try {
+      await ref
+          .read(helplineRepositoryProvider)
+          .updateStatus(id, status, callRemark: remark);
+      // Refresh list
+      ref.invalidate(helplineRequestsProvider);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update: $e')));
+      }
+    }
+  }
+
+  void _showCompletionDialog(BuildContext context, WidgetRef ref, String id) {
+    final remarkController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Complete Request'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Please add a remark to close this request.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: remarkController,
+              decoration: const InputDecoration(
+                labelText: 'Remark',
+                hintText: 'e.g., Donor found, transfusion successful',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (remarkController.text.trim().isEmpty) {
+                return; // Validation handled by UI state or just ignore
+              }
+              Navigator.pop(ctx);
+              _updateStatus(
+                context,
+                ref,
+                id,
+                'Completed',
+                remark: remarkController.text.trim(),
+              );
+            },
+            child: const Text('Complete'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -83,9 +143,8 @@ class _HelplineScreenState extends State<HelplineScreen> {
                           ),
                           Text(
                             'BloodConnect Command Center',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Theme.of(context).hintColor),
                           ),
                         ],
                       ),
@@ -112,36 +171,74 @@ class _HelplineScreenState extends State<HelplineScreen> {
 
             // List
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.all(20),
-                itemCount: _requests.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final req = _requests[index];
-                  return HelplineRequestCard(
-                    patientName: req['patientName'],
-                    hospital: req['hospital'],
-                    timeAgo: req['timeAgo'],
-                    bloodGroup: req['bloodGroup'],
-                    statusText: req['statusText'],
-                    urgency: req['urgency'],
-                    primaryActionLabel: req['primaryActionLabel'],
-                    onCall: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Calling...')),
+              child: ref
+                  .watch(helplineRequestsProvider)
+                  .when(
+                    data: (requests) {
+                      if (requests.isEmpty) {
+                        return const Center(child: Text('No active requests'));
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: requests.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final req = requests[index];
+                          // Data Mapping
+                          final urgencyStr = req['urgencyLevel'] ?? 'Normal';
+                          UrgencyLevel urgency;
+                          if (urgencyStr == 'Critical') {
+                            urgency = UrgencyLevel.critical;
+                          } else if (urgencyStr == 'Urgent') {
+                            urgency = UrgencyLevel.high;
+                          } else {
+                            urgency = UrgencyLevel.moderate;
+                          }
+
+                          final status = req['status'] ?? 'Pending';
+                          String actionLabel = 'View Details';
+                          if (status == 'Pending') actionLabel = 'Assign Donor';
+                          if (status == 'Assigned') actionLabel = 'Verify';
+
+                          // Time Ago Logic
+                          String timeAgo = 'Just now';
+                          final createdAt = req['createdAt'] as String?;
+                          if (createdAt != null) {
+                            final date = DateTime.tryParse(createdAt);
+                            if (date != null) {
+                              final diff = DateTime.now().difference(date);
+                              if (diff.inMinutes < 60) {
+                                timeAgo = '${diff.inMinutes}m ago';
+                              } else if (diff.inHours < 24) {
+                                timeAgo = '${diff.inHours}h ago';
+                              } else {
+                                timeAgo = '${diff.inDays}d ago';
+                              }
+                            }
+                          }
+
+                          return HelplineRequestCard(
+                            patientName: req['patientName'] ?? 'Unknown',
+                            hospital: req['hospital'] ?? 'Unknown Hospital',
+                            timeAgo: timeAgo,
+                            bloodGroup: req['bloodGroup'] ?? '',
+                            statusText: status,
+                            urgency: urgency,
+                            primaryActionLabel: actionLabel,
+                            onCall: () {
+                              // TODO: Implement call launcher
+                            },
+                            onPrimaryAction: () =>
+                                _handleRequestAction(context, ref, req),
+                          );
+                        },
                       );
                     },
-                    onPrimaryAction: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Action: ${req['primaryActionLabel']}'),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(child: Text('Error: $err')),
+                  ),
             ),
           ],
         ),

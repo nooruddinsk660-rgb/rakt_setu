@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../shared/components/app_loader.dart';
+import '../../shared/components/app_empty_state.dart';
 import 'widgets/burnout_warning_card.dart';
 import 'widgets/manager_performance_card.dart';
+import 'hr_provider.dart';
 
 class ParticipationChart extends StatelessWidget {
   const ParticipationChart({super.key});
@@ -9,7 +13,7 @@ class ParticipationChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Mock Data points (height percentages)
+    // Mock Data points (height percentages) - Keep mock for chart visual as backend might not separate by week yet
     final data = [0.3, 0.45, 0.35, 0.6, 0.85, 0.7, 0.5, 0.4];
 
     return Container(
@@ -51,30 +55,20 @@ class ParticipationChart extends StatelessWidget {
           SizedBox(
             height: 180,
             child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.end, // Align bars to bottom
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: data.map((heightPct) {
                 return Flexible(
                   child: FractionallySizedBox(
                     heightFactor: heightPct,
                     widthFactor: 0.6,
-                    alignment: Alignment.bottomCenter, // crucial
+                    alignment: Alignment.bottomCenter,
                     child: Container(
                       decoration: BoxDecoration(
                         color: theme.primaryColor.withOpacity(0.8),
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(4),
                         ),
-                        boxShadow: heightPct > 0.8
-                            ? [
-                                BoxShadow(
-                                  color: theme.primaryColor.withOpacity(0.4),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, -4),
-                                ),
-                              ]
-                            : null,
                       ),
                     ),
                   ),
@@ -82,39 +76,20 @@ class ParticipationChart extends StatelessWidget {
               }).toList(),
             ),
           ),
-          const SizedBox(height: 12),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Week 1',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-              Text(
-                'Week 2',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-              Text(
-                'Week 3',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-              Text(
-                'Week 4',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-            ],
-          ),
         ],
       ),
     );
   }
 }
 
-class HRScreen extends StatelessWidget {
+class HRScreen extends ConsumerWidget {
   const HRScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(hrDashboardStatsProvider);
+    final burnoutAsync = ref.watch(hrBurnoutRisksProvider);
+
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/hr/add-member'),
@@ -127,7 +102,13 @@ class HRScreen extends StatelessWidget {
         title: const Text('HR Dashboard'),
         centerTitle: false,
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              ref.refresh(hrDashboardStatsProvider);
+              ref.refresh(hrBurnoutRisksProvider);
+            },
+          ),
         ],
       ),
       body: SafeArea(
@@ -174,15 +155,22 @@ class HRScreen extends StatelessWidget {
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              'Freeze assignments for next week',
+                              'Freeze assignments',
                               style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.grey),
+                                  ?.copyWith(
+                                    color: Theme.of(context).hintColor,
+                                  ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    Switch(value: false, onChanged: (v) {}),
+                    Switch(
+                      value: false,
+                      onChanged: (v) {
+                        // TODO: Implement global lock or per-user lock modal
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -207,53 +195,54 @@ class HRScreen extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).primaryColor.withOpacity(0.1),
+                          color: Colors.red.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'CRITICAL',
+                          'RISK',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.red,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  TextButton(onPressed: () {}, child: const Text('View All')),
                 ],
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 240, // Height for Burnout Cards
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  clipBehavior: Clip.none,
-                  children: const [
-                    BurnoutWarningCard(
-                      name: 'Rahul S.',
-                      role: 'Senior Volunteer',
-                      imageUrl:
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuD-zqRQlWSDRtXzd0qUvIN4q4kAnXhF4FJpuXypc_KvUSC2J0uO-hfwtX__MYLMGoEevTzy_Zlv2luJrktERAgorzYJhKHJsw2QBwD1ALh2dRb-IfxpGPpzzv-Ra02aWowRGUHRNdOnvS9bXxbJ1_2hJ4tVu0ZLKaEiZP_z7TlL32jlgUSXUPWk1ciMHSo7a-f4ZQA9c5GPXrTJ6Tb7kLolTD00QTMMXTCk93C8feGO1aFR0q8osF3TYc0VXln55PhP5Dj12VcYiwkk',
-                      currentHours: 55,
-                      maxHours: 40,
-                      isCritical: true,
-                    ),
-                    SizedBox(width: 16),
-                    BurnoutWarningCard(
-                      name: 'Priya M.',
-                      role: 'Codeinator',
-                      imageUrl:
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuAEt39EznI8X2WSu-cUy7-Jzgc1NudJcx_5JXPPuHPTnzGy_Xl0YfXsZ9q4xIDbrb9wVVJfqVPGQxmhc91oS437IHbFLtdYhSI3pDFxuV8P54qMXJd9iLTrR9Tgrf__C0iU0Wm8I5pXxGHxkewX6FQ_cGQkNuDqQlBoVn5drxVv_UmsJ5ayIavUl0-LHSAiqNbJ9B-b1r7d3XQ_UL3SFdg_Wn5W8VAFCsL7LUceGHoLtbPa1hZGMEco8hwM5SuFuXoCJae6tHPeYzvY',
-                      currentHours: 42,
-                      maxHours: 40,
-                      isCritical: false,
-                    ),
-                  ],
+                height: 240,
+                child: burnoutAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                  data: (risks) {
+                    if (risks.isEmpty) {
+                      return const Center(
+                        child: Text('No burnout risks detected'),
+                      );
+                    }
+                    return ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      clipBehavior: Clip.none,
+                      itemCount: risks.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 16),
+                      itemBuilder: (context, index) {
+                        final risk = risks[index];
+                        return BurnoutWarningCard(
+                          name: risk['name'] ?? 'Unknown',
+                          role: risk['role'] ?? 'Volunteer',
+                          imageUrl: 'https://via.placeholder.com/150',
+                          currentHours: (risk['hoursWorked'] ?? 0).toDouble(),
+                          maxHours: 40,
+                          isCritical: (risk['riskLevel'] ?? 'LOW') == 'HIGH',
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
 
@@ -264,37 +253,40 @@ class HRScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Camps per Manager
+              // Camps per Manager (from stats)
               Text(
-                'Camps per Manager',
+                'Stats Overview',
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              const Column(
-                children: [
-                  ManagerPerformanceCard(
-                    name: 'Amit K.',
-                    initials: 'AK',
-                    status: '5 Active Camps',
-                    progress: 0.85,
-                  ),
-                  SizedBox(height: 12),
-                  ManagerPerformanceCard(
-                    name: 'Sneha R.',
-                    initials: 'SR',
-                    status: '3 Active Camps',
-                    progress: 0.5,
-                  ),
-                  SizedBox(height: 12),
-                  ManagerPerformanceCard(
-                    name: 'John D.',
-                    initials: 'JD',
-                    status: '2 Active Camps',
-                    progress: 0.35,
-                  ),
-                ],
+              statsAsync.when(
+                loading: () => const AppLoader(),
+                error: (err, stack) => Text('Error loading stats: $err'),
+                data: (stats) {
+                  // Backend might return different structure, using placeholders if keys missing
+                  final totalVolunteers = stats['totalVolunteers'] ?? 0;
+                  final activeCamps = stats['activeCamps'] ?? 0;
+
+                  return Column(
+                    children: [
+                      ManagerPerformanceCard(
+                        name: 'Total Volunteers',
+                        initials: 'TV',
+                        status: '$totalVolunteers Active',
+                        progress: 1.0,
+                      ),
+                      const SizedBox(height: 12),
+                      ManagerPerformanceCard(
+                        name: 'Active Camps',
+                        initials: 'AC',
+                        status: '$activeCamps Ongoing',
+                        progress: 0.8,
+                      ),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 80),

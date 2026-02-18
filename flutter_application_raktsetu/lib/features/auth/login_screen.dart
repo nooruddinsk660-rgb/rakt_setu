@@ -43,7 +43,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // but strictly here we can't nav without router setup.
           // For now, assume success means we can go to dashboard.
           if (next.hasValue && !next.isLoading && !next.hasError) {
-            // context.go('/dashboard');
+            context.go('/dashboard');
             // TODO: implement after router
           }
         },
@@ -73,7 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const Icon(
                     Icons.bloodtype,
                     size: 64,
-                    color: Color(0xFFC1121F), // Primary Red
+                    color: Color(0xFFC72929), // Updated to primary color
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFC1121F),
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -90,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                    ).textTheme.bodyLarge, // Removed hardcoded color
                   ),
                   const SizedBox(height: 48),
                   AppTextField(
@@ -126,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        // context.push('/forgot-password');
+                        context.push('/forgot-password');
                       },
                       child: const Text('Forgot Password?'),
                     ),

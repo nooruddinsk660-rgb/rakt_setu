@@ -66,7 +66,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Text(
                     'PREFERENCES',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.grey,
+                      color: Theme.of(context).hintColor,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -126,7 +126,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Text(
                     'ACCOUNT',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.grey,
+                      color: Theme.of(context).hintColor,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -169,9 +169,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: 32),
             Text(
               'Version 2.4.0 (Build 184)',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).hintColor,
+              ),
             ),
           ],
         ),

@@ -33,6 +33,9 @@ class AuthRepository {
     String email,
     String password,
     String role,
+    String phone,
+    String city,
+    String bloodGroup,
   ) async {
     try {
       await _client.post(
@@ -42,6 +45,9 @@ class AuthRepository {
           'email': email,
           'password': password,
           'role': role,
+          'phone': phone,
+          'city': city,
+          'bloodGroup': bloodGroup,
         },
       );
     } catch (e) {

@@ -50,7 +50,7 @@ class OperationsScreen extends StatelessWidget {
                             'MANAGER',
                             style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
-                                  color: Colors.grey,
+                                  color: Theme.of(context).hintColor,
                                   letterSpacing: 1.2,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -81,9 +81,9 @@ class OperationsScreen extends StatelessWidget {
               ),
               Text(
                 'Operations status for Oct 24, 2023',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
               ),
               const SizedBox(height: 16),
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DarkTheme {
-  static const Color primaryColor = Color(0xFFE63946);
+  static const Color primaryColor = Color(0xFFC72929);
   static const Color backgroundColor = Color(0xFF121212);
   static const Color surfaceColor = Color(0xFF1E1E1E);
   static const Color errorColor = Color(0xFFCF6679);
@@ -13,6 +14,7 @@ class DarkTheme {
       brightness: Brightness.dark,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
+      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
       colorScheme: const ColorScheme.dark(
         primary: primaryColor,
         secondary: primaryColor,
@@ -32,7 +34,10 @@ class DarkTheme {
           foregroundColor: onPrimary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
           elevation: 0,
         ),
       ),
@@ -64,7 +69,7 @@ class DarkTheme {
         color: surfaceColor,
         elevation: 4,
         shadowColor: const Color(0x3D000000),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         margin: EdgeInsets.zero,
       ),
     );

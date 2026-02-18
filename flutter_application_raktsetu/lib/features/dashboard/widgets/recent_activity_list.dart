@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import '../../../shared/components/app_card.dart';
 
 class RecentActivityList extends StatelessWidget {
-  const RecentActivityList({super.key});
+  final List<dynamic>? data;
+
+  const RecentActivityList({super.key, this.data});
 
   @override
   Widget build(BuildContext context) {
+    final activities = data ?? [];
+
+    if (activities.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -16,41 +24,67 @@ class RecentActivityList extends StatelessWidget {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        _buildActivityItem(
-          context,
-          icon: Icons.bloodtype,
-          iconColor: Colors.red,
-          title: 'Urgent A+ Request in Sector 4',
-          subtitle: 'Assigned to: Ravi Kumar • 5m ago',
-          trailing: Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
+        ...activities.map((activity) {
+          // Activity is a HelplineRequest
+          final type = activity['requestType'] ?? 'Request';
+          final status = activity['status'] ?? 'Pending';
+          final location = activity['location'] ?? 'Unknown';
+          final createdAt = activity['createdAt'] as String?;
+
+          // Simple time ago logic
+          String timeAgo = 'Just now';
+          if (createdAt != null) {
+            final date = DateTime.tryParse(createdAt);
+            if (date != null) {
+              final diff = DateTime.now().difference(date);
+              if (diff.inMinutes < 60) {
+                timeAgo = '${diff.inMinutes}m ago';
+              } else if (diff.inHours < 24) {
+                timeAgo = '${diff.inHours}h ago';
+              } else {
+                timeAgo = '${diff.inDays}d ago';
+              }
+            }
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildActivityItem(
+              context,
+              icon: Icons.bloodtype, // TODO: Map icon based on type
+              iconColor: _getStatusColor(status),
+              title: '$type Request',
+              subtitle: '$location • $timeAgo',
+              trailing: _getStatusIcon(status),
             ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildActivityItem(
-          context,
-          icon: Icons.person_add,
-          iconColor: Colors.blue,
-          title: 'New Volunteer Registration',
-          subtitle: 'Pending Approval • 25m ago',
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        ),
-        const SizedBox(height: 12),
-        _buildActivityItem(
-          context,
-          icon: Icons.check_circle,
-          iconColor: Colors.green,
-          title: 'Donation Drive Completed',
-          subtitle: 'Mumbai Central • 2h ago',
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        ),
+          );
+        }),
       ],
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'inprogress':
+        return Colors.blue;
+      case 'cancelled':
+        return Colors.grey;
+      default:
+        return Colors.orange;
+    }
+  }
+
+  Widget _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return const Icon(Icons.check_circle, color: Colors.green, size: 16);
+      case 'cancelled':
+        return const Icon(Icons.cancel, color: Colors.grey, size: 16);
+      default:
+        return const Icon(Icons.chevron_right, color: Colors.grey);
+    }
   }
 
   Widget _buildActivityItem(
