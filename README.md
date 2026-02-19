@@ -102,7 +102,6 @@ We strictly adhere to the **CodeRed Appathon** rules and ethics:
 
 - **AI Tools Disclosure**: AI coding assistants (Gemini, GitHub Copilot) were utilized to accelerate development, specifically for generating boilerplate code, refactorings, and drafting UI components. All core business logic, database architecture, and integration flows were designed and validated by the team.
 - **Open-Source Compliance**: All third-party libraries used (listed in the Tech Stack) are open-source and used in compliance with their respective MIT/Apache licenses.
-- **No Direct Copying**: Every module in RaktSetu is a custom-built solution tailored to the BloodConnect problem statement. No ready-made templates or third-party solutions were copied without significant modification and integration logic.
 - **Authenticity**: 
     - No plagiarism was involved in any part of the project.
     - All information provided in this documentation and within the app's demo data is created for demonstration purposes.
