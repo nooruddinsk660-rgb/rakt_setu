@@ -29,14 +29,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
       ref
-          .read(authStateProvider.notifier)
+          .read(authNotifierProvider.notifier)
           .login(_emailController.text, _passwordController.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authStateProvider, (previous, next) {
+    ref.listen(authNotifierProvider, (previous, next) {
       next.when(
         data: (_) {
           // Success - navigation will be handled by router redirect usually,
@@ -56,7 +56,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
     });
 
-    final authState = ref.watch(authStateProvider);
+    final authState = ref.watch(authNotifierProvider);
     final isLoading = authState.isLoading;
 
     return Scaffold(

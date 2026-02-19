@@ -39,21 +39,29 @@ class AuthRepository {
     String role,
     String phone,
     String city,
-    String bloodGroup,
-  ) async {
+    String bloodGroup, {
+    Map<String, dynamic>? location,
+    Map<String, dynamic>? hospitalDetails,
+  }) async {
     try {
-      await _client.post(
-        '/auth/register',
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'role': role,
-          'phone': phone,
-          'city': city,
-          'bloodGroup': bloodGroup,
-        },
-      );
+      final Map<String, dynamic> data = {
+        'name': name,
+        'email': email,
+        'password': password,
+        'role': role,
+        'phone': phone,
+        'city': city,
+        'bloodGroup': bloodGroup,
+      };
+
+      if (location != null) {
+        data['location'] = location;
+      }
+      if (hospitalDetails != null) {
+        data['hospitalDetails'] = hospitalDetails;
+      }
+
+      await _client.post('/auth/register', data: data);
     } catch (e) {
       rethrow;
     }
@@ -88,5 +96,25 @@ class AuthRepository {
       email: userData['email'] ?? '',
       role: role ?? '',
     );
+  }
+
+  Future<AppUser> getMe() async {
+    try {
+      final response = await _client.get('/users/me');
+      final userData = response.data['user'];
+      // Keep storage in sync
+      final userId = userData['_id'] ?? userData['id'] ?? '';
+      await _storage.saveUser(userId, userData['name'], userData['email']);
+      await _storage.saveRole(userData['role']);
+
+      return AppUser(
+        id: userId,
+        name: userData['name'] ?? '',
+        email: userData['email'] ?? '',
+        role: userData['role'] ?? '',
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

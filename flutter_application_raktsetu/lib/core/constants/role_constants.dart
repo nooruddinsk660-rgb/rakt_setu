@@ -6,7 +6,9 @@ enum AppRole {
   hr,
   helpline,
   volunteer,
-  donor;
+  donor,
+  hospital,
+  patient;
 
   String toJson() => name.toUpperCase();
 
@@ -31,6 +33,10 @@ enum AppRole {
         return 'Volunteer';
       case AppRole.donor:
         return 'Donor';
+      case AppRole.hospital:
+        return 'Hospital';
+      case AppRole.patient:
+        return 'Patient/Recipient';
     }
   }
 }

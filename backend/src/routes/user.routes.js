@@ -6,4 +6,7 @@ const { authenticate } = require('../middlewares/auth.middleware');
 // Request Role Upgrade
 router.post('/request-role', authenticate, userController.requestRole);
 
+// Get Current User
+router.get('/me', authenticate, userController.getMe);
+
 module.exports = router;

@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['ADMIN', 'MANAGER', 'HR', 'HELPLINE', 'VOLUNTEER', 'DONOR'],
+        enum: ['ADMIN', 'MANAGER', 'HR', 'HELPLINE', 'VOLUNTEER', 'DONOR', 'HOSPITAL', 'PATIENT'],
         default: 'VOLUNTEER'
     },
     roleRequest: {
@@ -40,6 +40,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
+    },
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number], // [longitude, latitude]
+            index: '2dsphere'
+        }
     },
     isActive: {
         type: Boolean,
@@ -55,12 +66,22 @@ const userSchema = new mongoose.Schema({
     lastLogin: {
         type: Date
     },
+    // --- Hospital Specific Fields ---
+    hospitalDetails: {
+        hospitalName: { type: String, trim: true },
+        licenseNumber: { type: String, trim: true },
+        website: { type: String, trim: true }
+    },
+    // --- Patient/Recipient Specific Fields ---
+    emergencyStatus: {
+        type: Boolean,
+        default: false
+    },
     // --- Donor Specific Fields ---
     bloodGroup: {
         type: String,
         enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         // Not required for all users (e.g. Admins might not donate)
-        // But if we want all users to be potential donors:
         required: false
     },
     availabilityStatus: {

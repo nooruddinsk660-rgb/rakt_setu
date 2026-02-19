@@ -16,7 +16,7 @@ class AppUser {
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      role: json['role'] ?? '',
+      role: (json['role'] as String?)?.toUpperCase() ?? '',
     );
   }
 

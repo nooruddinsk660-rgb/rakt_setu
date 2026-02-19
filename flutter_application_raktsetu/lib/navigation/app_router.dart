@@ -13,22 +13,34 @@ import '../features/donor/donor_directory_screen.dart';
 import '../features/helpline/helpline_screen.dart';
 import '../features/camp/camp_screen.dart';
 import '../features/camp/camp_list_screen.dart';
+import '../features/camp/camp_list_screen.dart';
 import '../features/outreach/outreach_screen.dart';
+import '../features/splash/splash_screen.dart'; // Import SplashScreen
 import '../features/hr/hr_screen.dart';
 import '../features/hr/add_team_member_screen.dart';
 import '../features/operations/operations_screen.dart';
 import '../features/notifications/notification_screen.dart';
+import '../features/notifications/notification_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/dashboard/roles/create_request_screen.dart';
+import '../features/dashboard/roles/blood_stock_screen.dart';
+import '../features/dashboard/roles/hospital_request_screen.dart';
+import '../features/dashboard/roles/admin/approval_queue_screen.dart';
+import '../features/dashboard/roles/admin/user_management_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(authNotifierProvider);
 
   // This logic works but ideally we listen to a Stream of auth status
   // For simplicity using the secure storage token check in redirect
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/forgot-password',
@@ -91,6 +103,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
       ),
+      GoRoute(
+        path: '/create-request',
+        builder: (context, state) => const CreateRequestScreen(),
+      ),
+      GoRoute(
+        path: '/blood-stock',
+        builder: (context, state) => const BloodStockScreen(),
+      ),
+      GoRoute(
+        path: '/hospital-request',
+        builder: (context, state) => const HospitalRequestScreen(),
+      ),
+      GoRoute(
+        path: '/admin/approvals',
+        builder: (context, state) => const ApprovalQueueScreen(),
+      ),
+      GoRoute(
+        path: '/admin/users',
+        builder: (context, state) => const UserManagementScreen(),
+      ),
     ],
     redirect: (context, state) async {
       // Simple redirect logic
@@ -102,12 +134,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.uri.toString() == '/forgot-password' ||
           state.uri.toString() == '/account-locked';
       final isSigningUp = state.uri.toString() == '/signup';
+      final isSplashing = state.uri.toString() == '/splash';
 
       if (token == null) {
-        return (isLoggingIn || isRecovering || isSigningUp) ? null : '/login';
+        return (isLoggingIn || isRecovering || isSigningUp || isSplashing)
+            ? null
+            : '/login';
       }
 
-      if (isLoggingIn || isSigningUp) {
+      if (isLoggingIn || isSigningUp || isSplashing) {
         return '/dashboard';
       }
 

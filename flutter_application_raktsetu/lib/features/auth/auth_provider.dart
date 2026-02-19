@@ -25,13 +25,12 @@ final currentUserProvider = StateNotifierProvider<UserNotifier, AppUser?>((
   return UserNotifier(repository);
 });
 
-final authStateProvider = StateNotifierProvider<AuthNotifier, AsyncValue<void>>(
-  (ref) {
-    final repository = ref.watch(authRepositoryProvider);
-    final userNotifier = ref.read(currentUserProvider.notifier);
-    return AuthNotifier(repository, userNotifier);
-  },
-);
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
+      final repository = ref.watch(authRepositoryProvider);
+      final userNotifier = ref.read(currentUserProvider.notifier);
+      return AuthNotifier(repository, userNotifier);
+    });
 
 class UserNotifier extends StateNotifier<AppUser?> {
   final AuthRepository _repository;
@@ -62,6 +61,27 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
       await _repository.login(email, password);
       await _userNotifier.refresh();
     });
+  }
+
+  Future<bool> checkAuthStatus() async {
+    state = const AsyncLoading();
+    try {
+      final isLoggedIn = await _repository.isLoggedIn();
+      if (!isLoggedIn) {
+        state = const AsyncData(null);
+        return false;
+      }
+
+      // Verify token with backend
+      await _repository.getMe();
+      await _userNotifier.refresh();
+      state = const AsyncData(null);
+      return true;
+    } catch (e) {
+      await logout();
+      state = AsyncError(e, StackTrace.current);
+      return false;
+    }
   }
 
   Future<void> logout() async {

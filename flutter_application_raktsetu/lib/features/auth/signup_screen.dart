@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart'; // Import Geolocator
 import '../../core/constants/role_constants.dart';
 import '../../core/utils/validators.dart';
 import '../../shared/components/app_button.dart';
@@ -22,6 +23,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
+  // New Controllers
+  final _hospitalNameController = TextEditingController();
+  final _licenseNumberController = TextEditingController();
+  final _websiteController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
+
   final _roleController = TextEditingController(
     text: AppRole.volunteer.toJson(),
   ); // Default role to valid enum
@@ -48,6 +56,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     _phoneController.dispose();
     _cityController.dispose();
     _roleController.dispose();
+    _hospitalNameController.dispose();
+    _licenseNumberController.dispose();
+    _websiteController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
     super.dispose();
   }
 
@@ -55,17 +68,41 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
+        // Construct Location
+        Map<String, dynamic>? location;
+        if (_latitudeController.text.isNotEmpty &&
+            _longitudeController.text.isNotEmpty) {
+          location = {
+            'type': 'Point',
+            'coordinates': [
+              double.tryParse(_longitudeController.text) ?? 0.0,
+              double.tryParse(_latitudeController.text) ?? 0.0,
+            ],
+          };
+        }
+
+        // Construct Hospital Details
+        Map<String, dynamic>? hospitalDetails;
+        if (_roleController.text == AppRole.hospital.toJson()) {
+          hospitalDetails = {
+            'hospitalName': _hospitalNameController.text.trim(),
+            'licenseNumber': _licenseNumberController.text.trim(),
+            'website': _websiteController.text.trim(),
+          };
+        }
+
         await ref
             .read(authRepositoryProvider)
             .register(
               _nameController.text.trim(),
               _emailController.text.trim(),
               _passwordController.text,
-              _roleController.text
-                  .trim(), // Consider making this a dropdown too if needed
+              _roleController.text.trim(),
               _phoneController.text.trim(),
               _cityController.text.trim(),
-              _selectedBloodGroup!,
+              _selectedBloodGroup ?? '',
+              location: location,
+              hospitalDetails: hospitalDetails,
             );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -83,6 +120,56 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         if (mounted) {
           setState(() => _isLoading = false);
         }
+      }
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Test if location services are enabled.
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled.');
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permissions are denied');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception(
+          'Location permissions are permanently denied, we cannot request permissions.',
+        );
+      }
+
+      // When we reach here, permissions are granted and we can
+      // continue accessing the position of the device.
+      final position = await Geolocator.getCurrentPosition();
+
+      if (mounted) {
+        setState(() {
+          _latitudeController.text = position.latitude.toString();
+          _longitudeController.text = position.longitude.toString();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error getting location: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -226,18 +313,95 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          items: const [
+                          onChanged: (v) {
+                            setState(() {
+                              _roleController.text = v!;
+                            });
+                          },
+                          items: [
                             DropdownMenuItem(
-                              value: 'VOLUNTEER',
-                              child: Text('Volunteer'),
+                              value: AppRole.volunteer.toJson(),
+                              child: Text(AppRole.volunteer.displayName),
                             ),
                             DropdownMenuItem(
-                              value: 'DONOR',
-                              child: Text('Donor'),
+                              value: AppRole.donor.toJson(),
+                              child: Text(AppRole.donor.displayName),
+                            ),
+                            DropdownMenuItem(
+                              value: AppRole.patient.toJson(),
+                              child: Text(AppRole.patient.displayName),
+                            ),
+                            DropdownMenuItem(
+                              value: AppRole.hospital.toJson(),
+                              child: Text(AppRole.hospital.displayName),
                             ),
                           ],
-                          onChanged: (v) => _roleController.text = v!,
                           validator: (v) => v == null ? 'Select Role' : null,
+                        ),
+                        // Conditional Fields
+                        if (_roleController.text ==
+                            AppRole.hospital.toJson()) ...[
+                          const SizedBox(height: 16),
+                          AppTextField(
+                            controller: _hospitalNameController,
+                            label: 'Hospital Name',
+                            hint: 'Enter hospital name',
+                            prefixIcon: Icons.local_hospital,
+                            validator: (v) =>
+                                v!.isEmpty ? 'Enter hospital name' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          AppTextField(
+                            controller: _licenseNumberController,
+                            label: 'License Number',
+                            hint: 'Enter license number',
+                            prefixIcon: Icons.badge,
+                            validator: (v) =>
+                                v!.isEmpty ? 'Enter license number' : null,
+                          ),
+                          const SizedBox(height: 16),
+                          AppTextField(
+                            controller: _websiteController,
+                            label: 'Website (Optional)',
+                            hint: 'Enter website URL',
+                            prefixIcon: Icons.language,
+                          ),
+                        ],
+                        // Location Fields (Optional for now)
+                        const SizedBox(height: 16),
+                        Text(
+                          'Location (Optional)',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppTextField(
+                                controller: _latitudeController,
+                                label: 'Latitude',
+                                hint: 'e.g. 22.5726',
+                                prefixIcon: Icons.map,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: AppTextField(
+                                controller: _longitudeController,
+                                label: 'Longitude',
+                                hint: 'e.g. 88.3639',
+                                prefixIcon: Icons.map,
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: _isLoading ? null : _getCurrentLocation,
+                          icon: const Icon(Icons.my_location),
+                          label: const Text('Get Current Location'),
                         ),
                         const SizedBox(height: 32),
                         AppButton(

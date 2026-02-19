@@ -26,14 +26,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
       ref
-          .read(authStateProvider.notifier)
+          .read(authNotifierProvider.notifier)
           .forgotPassword(_emailController.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authStateProvider, (previous, next) {
+    ref.listen(authNotifierProvider, (previous, next) {
       next.when(
         data: (_) {
           if (next.hasValue && !next.isLoading && !next.hasError) {
@@ -54,7 +54,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       );
     });
 
-    final authState = ref.watch(authStateProvider);
+    final authState = ref.watch(authNotifierProvider);
     final isLoading = authState.isLoading;
 
     return Scaffold(

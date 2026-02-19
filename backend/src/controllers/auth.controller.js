@@ -4,10 +4,11 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 // Register User (For testing/seeding purposes)
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, role, city, bloodGroup, phone } = req.body;
+        const { name, email, password, role, city, bloodGroup, phone, location, hospitalDetails } = req.body;
 
         // Allowed roles for self-registration: VOLUNTEER, DONOR, HELPLINE (Admin should be seeded)
-        const allowedRoles = ['VOLUNTEER', 'DONOR', 'HELPLINE'];
+        // Allowed roles for self-registration: VOLUNTEER, DONOR, HELPLINE, HOSPITAL, PATIENT
+        const allowedRoles = ['VOLUNTEER', 'DONOR', 'HELPLINE', 'HOSPITAL', 'PATIENT'];
         const userRole = allowedRoles.includes(role) ? role : 'VOLUNTEER';
 
         const existingUser = await User.findOne({ email });
@@ -22,7 +23,9 @@ exports.register = async (req, res) => {
             role: userRole,
             city,
             bloodGroup,
-            phone
+            phone,
+            location,
+            hospitalDetails
         });
         await user.save();
 
