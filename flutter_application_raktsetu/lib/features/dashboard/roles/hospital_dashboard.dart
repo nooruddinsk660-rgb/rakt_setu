@@ -5,6 +5,7 @@ import '../../../shared/providers/theme_provider.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/app_drawer.dart';
 import 'tabs/hospital_home_tab.dart';
+import 'tabs/requests_list_tab.dart';
 
 class HospitalDashboard extends ConsumerStatefulWidget {
   const HospitalDashboard({super.key});
@@ -21,7 +22,7 @@ class _HospitalDashboardState extends ConsumerState<HospitalDashboard> {
     const Center(
       child: Text('Blood Bank View - Coming Soon'),
     ), // Could reuse BloodStockScreen here or link to it
-    const Center(child: Text('All Requests View - Coming Soon')),
+    const RequestsListTab(),
   ];
 
   @override

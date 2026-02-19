@@ -18,28 +18,11 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  String _name = 'Loading...';
-  String _email = '';
-  AppRole _role = AppRole.volunteer;
-  bool _isAvailable = true;
-
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    final storage = ref.read(secureStorageProvider);
-    final userData = await storage.getUser();
-    final roleStr = await storage.getRole();
-    if (mounted) {
-      setState(() {
-        _name = userData['name'] ?? 'User';
-        _email = userData['email'] ?? '';
-        _role = AppRole.fromJson(roleStr ?? '');
-      });
-    }
+    // Refresh user data on load
+    Future.microtask(() => ref.read(currentUserProvider.notifier).refresh());
   }
 
   void _showRoleRequestDialog(BuildContext context) {
@@ -61,14 +44,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     border: OutlineInputBorder(),
                     labelText: 'Select Role',
                   ),
-                  items: [AppRole.manager, AppRole.hr, AppRole.helpline]
-                      .map(
-                        (role) => DropdownMenuItem(
-                          value: role,
-                          child: Text(role.displayName),
-                        ),
-                      )
-                      .toList(),
+                  items:
+                      [
+                            AppRole.manager,
+                            AppRole.hr,
+                            AppRole.helpline,
+                            AppRole.hospital,
+                          ]
+                          .map(
+                            (role) => DropdownMenuItem(
+                              value: role,
+                              child: Text(role.displayName),
+                            ),
+                          )
+                          .toList(),
                   onChanged: (val) => setDialogState(() => selectedRole = val),
                 ),
               ],
@@ -84,7 +73,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     : () async {
                         try {
                           Navigator.pop(context); // Close dialog
-                          // Implement call
                           await ref
                               .read(userRepositoryProvider)
                               .requestRole(selectedRole!.toJson());
@@ -115,13 +103,116 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showEditProfileDialog(BuildContext context, AppUser user) {
+    final nameController = TextEditingController(text: user.name);
+    final cityController = TextEditingController(text: user.city);
+    final phoneController = TextEditingController(text: user.phone);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Profile'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Full Name'),
+              ),
+              TextField(
+                controller: cityController,
+                decoration: const InputDecoration(labelText: 'City'),
+              ),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Phone'),
+                keyboardType: TextInputType.phone,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                Navigator.pop(ctx);
+                await ref
+                    .read(userRepositoryProvider)
+                    .updateProfile(
+                      name: nameController.text.trim(),
+                      city: cityController.text.trim(),
+                      phone: phoneController.text.trim(),
+                    );
+                await ref.read(currentUserProvider.notifier).refresh();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Profile updated!')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSecurityDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Account Security'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.password),
+              title: Text('Change Password'),
+              trailing: Icon(Icons.chevron_right),
+            ),
+            ListTile(
+              leading: Icon(Icons.phonelink_setup),
+              title: Text('Two-Factor Authentication'),
+              subtitle: Text('Coming soon'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
     final themeMode = ref.watch(themeModeProvider);
     final isDarkMode =
         themeMode == ThemeMode.dark ||
         (themeMode == ThemeMode.system &&
             MediaQuery.of(context).platformBrightness == Brightness.dark);
+
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final role = AppRole.fromJson(user.role);
 
     return Scaffold(
       appBar: AppBar(
@@ -135,7 +226,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           },
         ),
         title: const Text('Profile & Settings'),
-        actions: [TextButton(onPressed: () {}, child: const Text('Edit'))],
+        actions: [
+          TextButton(
+            onPressed: () => _showEditProfileDialog(context, user),
+            child: const Text('Edit'),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 100),
@@ -143,22 +239,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           children: [
             const SizedBox(height: 20),
             ProfileInfoCard(
-              name: _name,
-              role: _role.displayName,
-              location:
-                  'Kolkata, IN', // Placeholder for now, or fetch from storage if added
-              email: _email,
+              name: user.name,
+              role: role.displayName,
+              location: '${user.city ?? 'Location not set'}, IN',
+              email: user.email,
               imageUrl:
-                  'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_name)}&background=random',
-              onEdit: () {},
+                  'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user.name)}&background=random',
+              onEdit: () => _showEditProfileDialog(context, user),
             ),
+            const SizedBox(height: 12),
+            if (user.phone != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.phone, size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      user.phone!,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: AvailabilitySwitch(
-                value: _isAvailable,
-                onChanged: (value) {
-                  setState(() => _isAvailable = value);
+                value: user.availabilityStatus ?? true,
+                onChanged: (value) async {
+                  try {
+                    await ref
+                        .read(userRepositoryProvider)
+                        .updateProfile(availabilityStatus: value);
+                    await ref.read(currentUserProvider.notifier).refresh();
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Failed: $e')));
+                    }
+                  }
                 },
               ),
             ),
@@ -192,14 +316,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ProfileMenuItem(
                           title: 'My Schedule',
                           icon: Icons.calendar_month,
-                          onTap: () {},
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Schedule feature coming soon'),
+                              ),
+                            );
+                          },
                         ),
                         const Divider(height: 1),
                         ProfileMenuItem(
                           title: 'Dark Mode',
                           icon: Icons.dark_mode,
-                          onTap:
-                              () {}, // Tap handled by switch usually, but let's keep it interactive
+                          onTap: () {},
                           trailing: Switch(
                             value: isDarkMode,
                             onChanged: (value) {
@@ -224,7 +353,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
 
-            // ... (rest of account section) ...
             const SizedBox(height: 24),
 
             // Account
@@ -255,7 +383,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ProfileMenuItem(
                           title: 'Security',
                           icon: Icons.lock,
-                          onTap: () {},
+                          onTap: () => _showSecurityDialog(context),
                         ),
                         const Divider(height: 1),
                         ProfileMenuItem(
@@ -269,7 +397,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           icon: Icons.logout,
                           isDestructive: true,
                           onTap: () async {
-                            await ref.read(authRepositoryProvider).logout();
+                            await ref
+                                .read(authNotifierProvider.notifier)
+                                .logout();
                             if (context.mounted) {
                               Future.microtask(() => context.go('/login'));
                             }
@@ -293,15 +423,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3, // Profile
+        currentIndex: 3,
         onTap: (index) {
           if (index == 0) Future.microtask(() => context.go('/dashboard'));
-          if (index == 1)
-            Future.microtask(
-              () => context.go('/helpline'),
-            ); // Or operations/donors depending on role
+          if (index == 1) {
+            final r = role.toJson();
+            if (r == 'ADMIN' || r == 'VOLUNTEER') {
+              context.go('/helpline');
+            } else {
+              context.go('/dashboard'); // Fallback or specific role requests
+            }
+          }
           if (index == 2) Future.microtask(() => context.go('/notifications'));
-          // index 3 is current
         },
         type: BottomNavigationBarType.fixed,
         items: const [

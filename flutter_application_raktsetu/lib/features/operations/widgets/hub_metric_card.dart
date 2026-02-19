@@ -90,7 +90,7 @@ class HubMetricCard extends StatelessWidget {
               Text(
                 title,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.grey,
+                  color: theme.hintColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -111,7 +111,7 @@ class HubMetricCard extends StatelessWidget {
                       child: Text(
                         subValue!,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
+                          color: theme.hintColor,
                         ),
                       ),
                     ),

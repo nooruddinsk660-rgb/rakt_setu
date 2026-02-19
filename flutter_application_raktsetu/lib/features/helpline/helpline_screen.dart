@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared/components/app_text_field.dart';
 import 'widgets/helpline_filter_bar.dart';
 import 'widgets/helpline_request_card.dart';
@@ -17,6 +18,21 @@ class HelplineScreen extends ConsumerStatefulWidget {
 
 class _HelplineScreenState extends ConsumerState<HelplineScreen> {
   final _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _statusFilter = 'Active';
+  String _cityFilter = 'All';
+  String _groupFilter = 'All';
+  String _urgencyFilter = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
 
   Future<void> _handleRequestAction(
     BuildContext context,
@@ -27,13 +43,10 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
     final id = req['_id'];
 
     if (currentStatus == 'Pending') {
-      // Assign to self or trigger assignment logic
       _showAssignmentDialog(context, ref, id);
     } else if (currentStatus == 'Assigned') {
-      // Move to InProgress
       await _updateStatus(context, ref, id, 'InProgress');
     } else if (currentStatus == 'InProgress') {
-      // Move to Completed - Requires Remark
       _showCompletionDialog(context, ref, id);
     }
   }
@@ -55,8 +68,8 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
             callRemark: remark,
             assignedVolunteerId: assignedVolunteerId,
           );
-      // Refresh list
       ref.invalidate(helplineRequestsProvider);
+      ref.invalidate(myRequestsProvider);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -77,7 +90,7 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
         title: const Text('Assign Volunteer'),
         content: SizedBox(
           width: double.maxFinite,
-          height: 300,
+          height: 400,
           child: FutureBuilder<List<dynamic>>(
             future: ref.read(hrRepositoryProvider).getVolunteers(),
             builder: (context, snapshot) {
@@ -92,29 +105,27 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
                 return const Center(child: Text('No active volunteers found'));
               }
 
-              // Filter out those not available if needed, or show all
               return ListView.separated(
                 itemCount: volunteers.length,
                 separatorBuilder: (ctx, i) => const Divider(),
                 itemBuilder: (ctx, i) {
                   final v = volunteers[i];
+                  final isAvailable = v['availabilityStatus'] == true;
                   return ListTile(
-                    leading: CircleAvatar(child: Text((v['name'] ?? 'U')[0])),
+                    leading: CircleAvatar(
+                      backgroundColor: isAvailable ? Colors.red : Colors.grey,
+                      child: Text(
+                        (v['name'] ?? 'U')[0].toUpperCase(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
                     title: Text(v['name'] ?? 'Unknown'),
                     subtitle: Text(
                       '${v['city'] ?? 'Unknown location'} • ${v['phone'] ?? ''}',
                     ),
-                    trailing: v['availabilityStatus'] == true
-                        ? const Icon(
-                            Icons.check_circle,
-                            color: Colors.green,
-                            size: 16,
-                          )
-                        : const Icon(
-                            Icons.cancel,
-                            color: Colors.grey,
-                            size: 16,
-                          ),
+                    trailing: isAvailable
+                        ? const Icon(Icons.check_circle, color: Colors.green)
+                        : const Icon(Icons.circle_outlined, color: Colors.grey),
                     onTap: () {
                       Navigator.pop(ctx);
                       _updateStatus(
@@ -131,12 +142,6 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
             },
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-        ],
       ),
     );
   }
@@ -150,13 +155,13 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please add a remark to close this request.'),
+            const Text('Add completion notes and remark.'),
             const SizedBox(height: 16),
             TextField(
               controller: remarkController,
               decoration: const InputDecoration(
                 labelText: 'Remark',
-                hintText: 'e.g., Donor found, transfusion successful',
+                hintText: 'e.g., Blood units delivered successfully',
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
@@ -170,9 +175,7 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (remarkController.text.trim().isEmpty) {
-                return; // Validation handled by UI state or just ignore
-              }
+              if (remarkController.text.trim().isEmpty) return;
               Navigator.pop(ctx);
               _updateStatus(
                 context,
@@ -182,7 +185,7 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
                 remark: remarkController.text.trim(),
               );
             },
-            child: const Text('Complete'),
+            child: const Text('Submit'),
           ),
         ],
       ),
@@ -193,6 +196,18 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleCall(String? phone) async {
+    if (phone == null || phone.isEmpty) return;
+    try {
+      final Uri url = Uri.parse('tel:$phone');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      }
+    } catch (e) {
+      debugPrint('Error launching call: $e');
+    }
   }
 
   @override
@@ -252,23 +267,8 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
                                 .read(volunteerRepositoryProvider)
                                 .updateStatus(availabilityStatus: val);
                             ref.invalidate(volunteerProfileProvider);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    val
-                                        ? 'You are now Online'
-                                        : 'You are now Offline',
-                                  ),
-                                  backgroundColor: val
-                                      ? Colors.green
-                                      : Colors.grey,
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
-                            }
                           } catch (e) {
-                            if (context.mounted) {
+                            if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Failed: $e')),
                               );
@@ -279,16 +279,7 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
                     ],
                   );
                 },
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 16.0),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                ),
+                loading: () => const SizedBox.shrink(),
                 error: (err, stack) => const Icon(Icons.error, size: 20),
               );
             },
@@ -298,7 +289,6 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search Bar (Moved out of header)
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: AppTextField(
@@ -309,69 +299,145 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
               ),
             ),
 
-            // Filters
-            const HelplineFilterBar(),
+            // Functional Filter Bar
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: [
+                  _buildFilterChip(
+                    'Status: $_statusFilter',
+                    () => _showFilterDialog('Status', [
+                      'Active',
+                      'Pending',
+                      'Assigned',
+                      'InProgress',
+                      'Completed',
+                      'All',
+                    ], (v) => setState(() => _statusFilter = v)),
+                    isActive: _statusFilter != 'All',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    'City: $_cityFilter',
+                    () => _showFilterDialog('City', [
+                      'Delhi',
+                      'Mumbai',
+                      'Bangalore',
+                      'Kolkata',
+                      'All',
+                    ], (v) => setState(() => _cityFilter = v)),
+                    isActive: _cityFilter != 'All',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    'Group: $_groupFilter',
+                    () => _showFilterDialog('Blood Group', [
+                      'A+',
+                      'A-',
+                      'B+',
+                      'B-',
+                      'AB+',
+                      'AB-',
+                      'O+',
+                      'O-',
+                      'All',
+                    ], (v) => setState(() => _groupFilter = v)),
+                    isActive: _groupFilter != 'All',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    'Urgency: $_urgencyFilter',
+                    () => _showFilterDialog('Urgency', [
+                      'Critical',
+                      'Urgent',
+                      'Normal',
+                      'All',
+                    ], (v) => setState(() => _urgencyFilter = v)),
+                    isActive: _urgencyFilter != 'All',
+                  ),
+                ],
+              ),
+            ),
 
-            // List
             Expanded(
               child: ref
                   .watch(helplineRequestsProvider)
                   .when(
                     data: (requests) {
-                      if (requests.isEmpty) {
-                        return const Center(child: Text('No active requests'));
+                      // Apply all filters
+                      final filtered = requests.where((req) {
+                        final matchesSearch =
+                            _searchQuery.isEmpty ||
+                            (req['patientName'] ?? '').toLowerCase().contains(
+                              _searchQuery,
+                            ) ||
+                            (req['hospital'] ?? '').toLowerCase().contains(
+                              _searchQuery,
+                            );
+
+                        final matchesStatus =
+                            _statusFilter == 'All' ||
+                            (_statusFilter == 'Active'
+                                ? (req['status'] != 'Completed' &&
+                                      req['status'] != 'Cancelled')
+                                : req['status'] == _statusFilter);
+
+                        final matchesCity =
+                            _cityFilter == 'All' ||
+                            (req['city'] ?? '').toLowerCase() ==
+                                _cityFilter.toLowerCase();
+                        final matchesGroup =
+                            _groupFilter == 'All' ||
+                            req['bloodGroup'] == _groupFilter;
+                        final matchesUrgency =
+                            _urgencyFilter == 'All' ||
+                            req['urgencyLevel'] == _urgencyFilter;
+
+                        return matchesSearch &&
+                            matchesStatus &&
+                            matchesCity &&
+                            matchesGroup &&
+                            matchesUrgency;
+                      }).toList();
+
+                      if (filtered.isEmpty) {
+                        return const Center(
+                          child: Text('No requests match your filters'),
+                        );
                       }
+
                       return ListView.separated(
                         padding: const EdgeInsets.all(20),
-                        itemCount: requests.length,
+                        itemCount: filtered.length,
                         separatorBuilder: (context, index) =>
                             const SizedBox(height: 16),
                         itemBuilder: (context, index) {
-                          final req = requests[index];
-                          // Data Mapping
+                          final req = filtered[index];
                           final urgencyStr = req['urgencyLevel'] ?? 'Normal';
-                          UrgencyLevel urgency;
-                          if (urgencyStr == 'Critical') {
-                            urgency = UrgencyLevel.critical;
-                          } else if (urgencyStr == 'Urgent') {
-                            urgency = UrgencyLevel.high;
-                          } else {
-                            urgency = UrgencyLevel.moderate;
-                          }
-
+                          UrgencyLevel urgency = urgencyStr == 'Critical'
+                              ? UrgencyLevel.critical
+                              : (urgencyStr == 'Urgent'
+                                    ? UrgencyLevel.high
+                                    : UrgencyLevel.moderate);
                           final status = req['status'] ?? 'Pending';
-                          String actionLabel = 'View Details';
-                          if (status == 'Pending') actionLabel = 'Assign Donor';
-                          if (status == 'Assigned') actionLabel = 'Verify';
 
-                          // Time Ago Logic
-                          String timeAgo = 'Just now';
-                          final createdAt = req['createdAt'] as String?;
-                          if (createdAt != null) {
-                            final date = DateTime.tryParse(createdAt);
-                            if (date != null) {
-                              final diff = DateTime.now().difference(date);
-                              if (diff.inMinutes < 60) {
-                                timeAgo = '${diff.inMinutes}m ago';
-                              } else if (diff.inHours < 24) {
-                                timeAgo = '${diff.inHours}h ago';
-                              } else {
-                                timeAgo = '${diff.inDays}d ago';
-                              }
-                            }
-                          }
+                          String actionLabel = 'View Details';
+                          if (status == 'Pending')
+                            actionLabel = 'Assign Volunteer';
+                          if (status == 'Assigned')
+                            actionLabel = 'Start Progress';
+                          if (status == 'InProgress') actionLabel = 'Complete';
 
                           return HelplineRequestCard(
                             patientName: req['patientName'] ?? 'Unknown',
                             hospital: req['hospital'] ?? 'Unknown Hospital',
-                            timeAgo: timeAgo,
+                            timeAgo: _getTimeAgo(req['createdAt']),
                             bloodGroup: req['bloodGroup'] ?? '',
                             statusText: status,
                             urgency: urgency,
                             primaryActionLabel: actionLabel,
-                            onCall: () {
-                              // TODO: Implement call launcher
-                            },
+                            onCall: () => _handleCall(req['phone']),
                             onPrimaryAction: () =>
                                 _handleRequestAction(context, ref, req),
                           );
@@ -387,22 +453,19 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => context.push('/create-request'),
         backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: 2, // Requests
+        selectedIndex: 2,
         onDestinationSelected: (index) {
-          if (index == 0) {
-            Future.microtask(() => context.go('/dashboard'));
-          } else if (index == 1) {
-            Future.microtask(() => context.go('/donors'));
-          } else if (index == 2) {
-            // Already on Requests
-          } else if (index == 3) {
-            Future.microtask(() => context.go('/profile'));
-          }
+          if (index == 0)
+            context.go('/dashboard');
+          else if (index == 1)
+            context.go('/operations');
+          else if (index == 3)
+            context.go('/profile');
         },
         destinations: const [
           NavigationDestination(
@@ -410,9 +473,9 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
             label: 'Dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.groups_outlined),
-            selectedIcon: Icon(Icons.groups),
-            label: 'Volunteers',
+            icon: Icon(Icons.hub_outlined),
+            selectedIcon: Icon(Icons.hub),
+            label: 'Operations',
           ),
           NavigationDestination(
             icon: Icon(Icons.assignment_outlined),
@@ -424,6 +487,96 @@ class _HelplineScreenState extends ConsumerState<HelplineScreen> {
             selectedIcon: Icon(Icons.person),
             label: 'Profile',
           ),
+        ],
+      ),
+    );
+  }
+
+  String _getTimeAgo(String? createdAt) {
+    if (createdAt == null) return 'Just now';
+    final date = DateTime.tryParse(createdAt);
+    if (date == null) return 'Just now';
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  Widget _buildFilterChip(
+    String label,
+    VoidCallback onTap, {
+    bool isActive = false,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? theme.primaryColor
+              : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isActive
+                ? theme.primaryColor
+                : (isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isActive
+                    ? Colors.white
+                    : (isDark ? Colors.grey.shade300 : Colors.grey.shade800),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.expand_more,
+              size: 16,
+              color: isActive
+                  ? Colors.white
+                  : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFilterDialog(
+    String title,
+    List<String> options,
+    Function(String) onSelect,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+          ),
+          const Divider(),
+          ...options.map(
+            (opt) => ListTile(
+              title: Text(opt),
+              onTap: () {
+                onSelect(opt);
+                Navigator.pop(ctx);
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );

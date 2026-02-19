@@ -15,18 +15,27 @@ class OperationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(currentUserProvider);
+    final user = ref.watch(currentUserProvider);
     final statsAsync = ref.watch(operationsOverviewProvider);
 
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final role = AppRole.fromJson(user.role);
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Better background
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Operations Hub'),
+        title: Text('${role.displayName} Operations'),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: BackButton(
-          color: Colors.black,
+          color: theme.textTheme.titleLarge?.color,
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -49,11 +58,11 @@ class OperationsScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -75,9 +84,9 @@ class OperationsScreen extends ConsumerWidget {
                             ).primaryColor.withOpacity(0.3),
                             width: 2,
                           ),
-                          image: const DecorationImage(
+                          image: DecorationImage(
                             image: NetworkImage(
-                              'https://ui-avatars.com/api/?name=Manager&background=random',
+                              'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user.name)}&background=random',
                             ),
                             fit: BoxFit.cover,
                           ),
@@ -89,11 +98,7 @@ class OperationsScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              userAsync != null
-                                  ? AppRole.fromJson(
-                                      userAsync.role,
-                                    ).displayName.toUpperCase()
-                                  : 'STAFF',
+                              role.displayName.toUpperCase(),
                               style: Theme.of(context).textTheme.labelSmall
                                   ?.copyWith(
                                     color: Theme.of(context).primaryColor,
@@ -103,7 +108,7 @@ class OperationsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              userAsync?.name ?? 'Operations Manager',
+                              user.name,
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
@@ -111,9 +116,9 @@ class OperationsScreen extends ConsumerWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: () {}, // Settings or Profile link
-                        icon: const Icon(Icons.settings_outlined),
-                        color: Colors.grey,
+                        onPressed: () => context.push('/profile'),
+                        icon: const Icon(Icons.person_outline),
+                        color: theme.hintColor,
                       ),
                     ],
                   ),
@@ -122,88 +127,13 @@ class OperationsScreen extends ConsumerWidget {
 
                 // Loaded Data
                 statsAsync.when(
-                  data: (stats) => Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Overview',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            'Today',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // Metrics Grid
-                      Row(
-                        children: [
-                          Expanded(
-                            child: HubMetricCard(
-                              title: 'Assigned Camps',
-                              value: (stats['assignedCamps'] ?? 0).toString(),
-                              subValue: 'Active',
-                              icon: Icons.campaign,
-                              color: Colors.green,
-                              badgeText: 'Active',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: HubMetricCard(
-                              title: 'Workflow',
-                              value: (stats['workflowUrgent'] ?? 0).toString(),
-                              subValue: 'Urgent',
-                              icon: Icons.pending_actions,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: HubMetricCard(
-                              title: 'Pending Pay',
-                              value: '₹${stats['pendingPay'] ?? 0}',
-                              icon: Icons.payments,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  data: (stats) => _buildRoleMetrics(context, role, stats),
                   loading: () => const Padding(
                     padding: EdgeInsets.all(40.0),
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (err, stack) => Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red[700]),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Access Denied or Server Error. \nEnsure you have Manager permissions.',
-                            style: TextStyle(color: Colors.red[900]),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  error: (err, stack) =>
+                      _buildErrorCard(context, err.toString()),
                 ),
 
                 const SizedBox(height: 32),
@@ -216,73 +146,341 @@ class OperationsScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      QuickActionItem(
-                        label: 'New Camp',
-                        icon: Icons.add_location_alt,
-                        onTap: () {
-                          Future.microtask(
-                            () => context.go('/camps'),
-                          ); // Navigate to Camp List
-                        },
-                      ),
-                      QuickActionItem(
-                        label: 'Inventory',
-                        icon: Icons.inventory_2,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Inventory Module: Feature Coming Soon',
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      QuickActionItem(
-                        label: 'Volunteer',
-                        icon: Icons.group_add,
-                        onTap: () {
-                          Future.microtask(() => context.go('/hr'));
-                        },
-                      ),
-                      QuickActionItem(
-                        label: 'Reports',
-                        icon: Icons.bar_chart,
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Reports Module: Feature Coming Soon',
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+                _buildQuickActions(context, role),
 
                 const SizedBox(height: 80),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRoleMetrics(
+    BuildContext context,
+    AppRole role,
+    Map<String, dynamic> stats,
+  ) {
+    List<Widget> cards = [];
+
+    if (role == AppRole.admin) {
+      cards = [
+        _metricRow([
+          _metric(
+            context,
+            'Total Users',
+            stats['totalUsers'],
+            Icons.people,
+            Colors.blue,
+          ),
+          _metric(
+            context,
+            'Total Camps',
+            stats['totalCamps'],
+            Icons.campaign,
+            Colors.green,
+          ),
+        ]),
+        const SizedBox(height: 12),
+        _metricRow([
+          _metric(
+            context,
+            'Active Req',
+            stats['activeRequests'],
+            Icons.assignment,
+            Colors.orange,
+          ),
+          _metric(
+            context,
+            'Verifications',
+            stats['verificationPending'],
+            Icons.verified_user,
+            Colors.purple,
+          ),
+        ]),
+      ];
+    } else if (role == AppRole.manager) {
+      cards = [
+        HubMetricCard(
+          title: 'Assigned Camps',
+          value: (stats['assignedCamps'] ?? 0).toString(),
+          subValue: 'Active Today',
+          icon: Icons.campaign,
+          color: Colors.green,
+          badgeText: 'Live',
+        ),
+        const SizedBox(height: 12),
+        _metricRow([
+          _metric(
+            context,
+            'Critical Req',
+            stats['workflowUrgent'],
+            Icons.warning,
+            Colors.red,
+          ),
+          _metric(
+            context,
+            'Pending Pay',
+            '₹${stats['pendingPay'] ?? 0}',
+            Icons.payments,
+            Colors.blue,
+          ),
+        ]),
+      ];
+    } else if (role == AppRole.hr) {
+      cards = [
+        _metricRow([
+          _metric(
+            context,
+            'Volunteers',
+            stats['totalVolunteers'],
+            Icons.groups,
+            Colors.indigo,
+          ),
+          _metric(
+            context,
+            'Online Now',
+            stats['onlineVolunteers'],
+            Icons.circle,
+            Colors.green,
+          ),
+        ]),
+        const SizedBox(height: 12),
+        _metricRow([
+          _metric(
+            context,
+            'Upgrades',
+            stats['newRoleRequests'],
+            Icons.upgrade,
+            Colors.orange,
+          ),
+          _metric(
+            context,
+            'Interviews',
+            stats['pendingInterview'],
+            Icons.event,
+            Colors.blue,
+          ),
+        ]),
+      ];
+    } else {
+      // Volunteer or others
+      cards = [
+        _metricRow([
+          _metric(
+            context,
+            'My Tasks',
+            stats['myTasks'],
+            Icons.task_alt,
+            Colors.blue,
+          ),
+          _metric(
+            context,
+            'Completed',
+            stats['completedTasks'],
+            Icons.done_all,
+            Colors.green,
+          ),
+        ]),
+        const SizedBox(height: 12),
+        _metricRow([
+          _metric(
+            context,
+            'Upcoming Camps',
+            stats['upcomingCamps'],
+            Icons.event,
+            Colors.orange,
+          ),
+          _metric(
+            context,
+            'New Msg',
+            stats['messages'],
+            Icons.mail,
+            Colors.purple,
+          ),
+        ]),
+      ];
+    }
+
+    return Column(children: cards);
+  }
+
+  Widget _metricRow(List<Widget> children) {
+    return Row(
+      children:
+          children
+              .expand((w) => [Expanded(child: w), const SizedBox(width: 12)])
+              .toList()
+            ..removeLast(),
+    );
+  }
+
+  Widget _metric(
+    BuildContext context,
+    String title,
+    dynamic value,
+    IconData icon,
+    Color color,
+  ) {
+    return HubMetricCard(
+      title: title,
+      value: (value ?? 0).toString(),
+      icon: icon,
+      color: color,
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context, AppRole role) {
+    final List<QuickActionItem> actions = [];
+
+    if (role == AppRole.admin) {
+      actions.addAll([
+        QuickActionItem(
+          label: 'All Users',
+          icon: Icons.person_search,
+          onTap: () => context.push('/hr'),
+        ),
+        QuickActionItem(
+          label: 'Camp Admin',
+          icon: Icons.map,
+          onTap: () => context.push('/camps'),
+        ),
+        QuickActionItem(
+          label: 'Inventory',
+          icon: Icons.inventory,
+          onTap: () => _showComingSoon(context),
+        ),
+        QuickActionItem(
+          label: 'System Log',
+          icon: Icons.terminal,
+          onTap: () => _showComingSoon(context),
+        ),
+      ]);
+    } else if (role == AppRole.manager) {
+      actions.addAll([
+        QuickActionItem(
+          label: 'Manage Camps',
+          icon: Icons.location_on,
+          onTap: () => context.push('/camps'),
+        ),
+        QuickActionItem(
+          label: 'Inventory',
+          icon: Icons.storage,
+          onTap: () => _showComingSoon(context),
+        ),
+        QuickActionItem(
+          label: 'Helpline',
+          icon: Icons.support_agent,
+          onTap: () => context.push('/helpline'),
+        ),
+        QuickActionItem(
+          label: 'Payment Appr',
+          icon: Icons.payments,
+          onTap: () => context.push('/reimbursement-approval'),
+        ),
+      ]);
+    } else if (role == AppRole.hr) {
+      actions.addAll([
+        QuickActionItem(
+          label: 'Volunteer List',
+          icon: Icons.people,
+          onTap: () => context.push('/hr'),
+        ),
+        QuickActionItem(
+          label: 'Verify Users',
+          icon: Icons.how_to_reg,
+          onTap: () => _showComingSoon(context),
+        ),
+        QuickActionItem(
+          label: 'Performance',
+          icon: Icons.insights,
+          onTap: () => _showComingSoon(context),
+        ),
+        QuickActionItem(
+          label: 'Payment Appr',
+          icon: Icons.payments,
+          onTap: () => context.push('/reimbursement-approval'),
+        ),
+      ]);
+    } else {
+      actions.addAll([
+        QuickActionItem(
+          label: 'My Tasks',
+          icon: Icons.assignment_turned_in,
+          onTap: () => context.push('/helpline'),
+        ),
+        QuickActionItem(
+          label: 'Available Camps',
+          icon: Icons.event_available,
+          onTap: () => context.push('/camps'),
+        ),
+        QuickActionItem(
+          label: 'Reimbursement',
+          icon: Icons.account_balance_wallet,
+          onTap: () => context.push('/reimbursements'),
+        ),
+        QuickActionItem(
+          label: 'Leaderboard',
+          icon: Icons.emoji_events,
+          onTap: () => _showComingSoon(context),
+        ),
+      ]);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(
+              Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: actions,
+      ),
+    );
+  }
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Module Coming Soon: We are working hard to build this!'),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(BuildContext context, String message) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red[700]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Error loading dashboard: $message',
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.red[300]
+                    : Colors.red[900],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -14,3 +14,12 @@ final helplineRequestsProvider = FutureProvider.autoDispose<List<dynamic>>((
   final repository = ref.watch(helplineRepositoryProvider);
   return repository.getRequests();
 });
+
+final myRequestsProvider = FutureProvider.autoDispose<List<dynamic>>((
+  ref,
+) async {
+  final repository = ref.watch(helplineRepositoryProvider);
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return [];
+  return repository.getRequests(filters: {'requestedBy': user.id});
+});

@@ -30,17 +30,42 @@ class SecureStorage {
     return await _storage.read(key: _roleKey);
   }
 
-  Future<void> saveUser(String id, String name, String email) async {
+  Future<void> saveUser(
+    String id,
+    String name,
+    String email, {
+    String? city,
+    String? phone,
+    bool? availabilityStatus,
+  }) async {
     await _storage.write(key: 'user_id', value: id);
     await _storage.write(key: 'user_name', value: name);
     await _storage.write(key: 'user_email', value: email);
+    if (city != null) await _storage.write(key: 'user_city', value: city);
+    if (phone != null) await _storage.write(key: 'user_phone', value: phone);
+    if (availabilityStatus != null) {
+      await _storage.write(
+        key: 'user_availability',
+        value: availabilityStatus.toString(),
+      );
+    }
   }
 
-  Future<Map<String, String>> getUser() async {
+  Future<Map<String, dynamic>> getUser() async {
     final id = await _storage.read(key: 'user_id');
     final name = await _storage.read(key: 'user_name');
     final email = await _storage.read(key: 'user_email');
-    return {'id': id ?? '', 'name': name ?? '', 'email': email ?? ''};
+    final city = await _storage.read(key: 'user_city');
+    final phone = await _storage.read(key: 'user_phone');
+    final availability = await _storage.read(key: 'user_availability');
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'city': city,
+      'phone': phone,
+      'availabilityStatus': availability == 'true',
+    };
   }
 
   Future<void> clearAll() async {

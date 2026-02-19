@@ -5,11 +5,12 @@ const User = require('../models/User');
 // Create Request & Smart Assignment
 exports.createRequest = async (req, res) => {
     try {
-        const { patientName, bloodGroup, unitsRequired, hospital, city, urgencyLevel } = req.body;
+        const { patientName, phone, bloodGroup, unitsRequired, hospital, city, urgencyLevel } = req.body;
 
         // 1. Create Request Object
         const request = new HelplineRequest({
             patientName,
+            phone,
             bloodGroup,
             unitsRequired,
             hospital,
@@ -165,11 +166,12 @@ exports.updateStatus = async (req, res) => {
 // Get Requests (Filters)
 exports.getRequests = async (req, res) => {
     try {
-        const { status, city } = req.query;
+        const { status, city, requestedBy } = req.query;
         const query = {};
 
         if (status) query.status = status;
         if (city) query.city = new RegExp(city, 'i');
+        if (requestedBy) query.requestedBy = requestedBy;
 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;

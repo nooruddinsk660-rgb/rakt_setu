@@ -24,9 +24,15 @@ class AuthRepository {
       await _storage.saveToken(accessToken);
       await _storage.saveRefreshToken(refreshToken);
       await _storage.saveRole(role);
-      // user['_id'] is commonly used in Mongo, fallback to user['id']
       final userId = user['_id'] ?? user['id'] ?? '';
-      await _storage.saveUser(userId, user['name'], user['email']);
+      await _storage.saveUser(
+        userId,
+        user['name'] ?? '',
+        user['email'] ?? '',
+        city: user['city'],
+        phone: user['phone'],
+        availabilityStatus: user['availabilityStatus'],
+      );
     } catch (e) {
       rethrow;
     }
@@ -95,6 +101,9 @@ class AuthRepository {
       name: userData['name'] ?? '',
       email: userData['email'] ?? '',
       role: role ?? '',
+      city: userData['city'],
+      phone: userData['phone'],
+      availabilityStatus: userData['availabilityStatus'],
     );
   }
 
@@ -104,15 +113,17 @@ class AuthRepository {
       final userData = response.data['user'];
       // Keep storage in sync
       final userId = userData['_id'] ?? userData['id'] ?? '';
-      await _storage.saveUser(userId, userData['name'], userData['email']);
-      await _storage.saveRole(userData['role']);
-
-      return AppUser(
-        id: userId,
-        name: userData['name'] ?? '',
-        email: userData['email'] ?? '',
-        role: userData['role'] ?? '',
+      await _storage.saveUser(
+        userId,
+        userData['name'] ?? '',
+        userData['email'] ?? '',
+        city: userData['city'],
+        phone: userData['phone'],
+        availabilityStatus: userData['availabilityStatus'],
       );
+      await _storage.saveRole(userData['role'] ?? '');
+
+      return AppUser.fromJson(userData);
     } catch (e) {
       rethrow;
     }

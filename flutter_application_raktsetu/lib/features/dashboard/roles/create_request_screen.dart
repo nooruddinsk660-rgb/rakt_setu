@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/components/app_button.dart';
 import '../../../../shared/components/app_text_field.dart';
+import '../../helpline/helpline_provider.dart';
 
-class CreateRequestScreen extends StatefulWidget {
+class CreateRequestScreen extends ConsumerStatefulWidget {
   const CreateRequestScreen({super.key});
 
   @override
-  State<CreateRequestScreen> createState() => _CreateRequestScreenState();
+  ConsumerState<CreateRequestScreen> createState() =>
+      _CreateRequestScreenState();
 }
 
-class _CreateRequestScreenState extends State<CreateRequestScreen> {
+class _CreateRequestScreenState extends ConsumerState<CreateRequestScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _patientNameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _hospitalController = TextEditingController();
+  final _cityController = TextEditingController();
   final _unitsController = TextEditingController();
   final _notesController = TextEditingController();
   String? _selectedBloodGroup;
@@ -30,11 +36,14 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     'O-',
   ];
 
-  final List<String> _urgencyLevels = ['Critical', 'High', 'Moderate', 'Low'];
+  final List<String> _urgencyLevels = ['Critical', 'Urgent', 'Normal'];
 
   @override
   void dispose() {
+    _patientNameController.dispose();
+    _phoneController.dispose();
     _hospitalController.dispose();
+    _cityController.dispose();
     _unitsController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -44,15 +53,35 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final repository = ref.read(helplineRepositoryProvider);
+        await repository.createRequest({
+          'patientName': _patientNameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'bloodGroup': _selectedBloodGroup,
+          'unitsRequired': int.tryParse(_unitsController.text) ?? 1,
+          'hospital': _hospitalController.text.trim(),
+          'city': _cityController.text.trim(),
+          'urgencyLevel': _urgencyLevel,
+          'notes': _notesController.text.trim(),
+        });
 
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request Created Successfully!')),
-        );
-        context.pop();
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Request Created Successfully!')),
+          );
+          ref.invalidate(helplineRequestsProvider);
+          ref.invalidate(myRequestsProvider);
+          context.pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to create request: $e')),
+          );
+        }
       }
     }
   }
@@ -73,7 +102,23 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 24),
-
+              AppTextField(
+                controller: _patientNameController,
+                label: 'Patient Name',
+                hint: 'Enter patient name',
+                prefixIcon: Icons.person,
+                validator: (v) => v!.isEmpty ? 'Enter patient name' : null,
+              ),
+              const SizedBox(height: 16),
+              AppTextField(
+                controller: _phoneController,
+                label: 'Phone Number',
+                hint: 'Enter contact number',
+                keyboardType: TextInputType.phone,
+                prefixIcon: Icons.phone,
+                validator: (v) => v!.isEmpty ? 'Enter phone number' : null,
+              ),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedBloodGroup,
                 decoration: InputDecoration(
@@ -90,7 +135,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 validator: (v) => v == null ? 'Select Blood Group' : null,
               ),
               const SizedBox(height: 16),
-
               AppTextField(
                 controller: _unitsController,
                 label: 'Units Required',
@@ -100,7 +144,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 validator: (v) => v!.isEmpty ? 'Enter units' : null,
               ),
               const SizedBox(height: 16),
-
               DropdownButtonFormField<String>(
                 value: _urgencyLevel,
                 decoration: InputDecoration(
@@ -117,7 +160,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 validator: (v) => v == null ? 'Select Urgency' : null,
               ),
               const SizedBox(height: 16),
-
               AppTextField(
                 controller: _hospitalController,
                 label: 'Hospital Name',
@@ -126,7 +168,14 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 validator: (v) => v!.isEmpty ? 'Enter hospital name' : null,
               ),
               const SizedBox(height: 16),
-
+              AppTextField(
+                controller: _cityController,
+                label: 'City',
+                hint: 'Enter city',
+                prefixIcon: Icons.location_city,
+                validator: (v) => v!.isEmpty ? 'Enter city' : null,
+              ),
+              const SizedBox(height: 16),
               AppTextField(
                 controller: _notesController,
                 label: 'Additional Notes (Optional)',
@@ -135,7 +184,6 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 maxLines: 3,
               ),
               const SizedBox(height: 32),
-
               AppButton(
                 text: 'Submit Request',
                 onPressed: _isLoading ? null : _submitRequest,

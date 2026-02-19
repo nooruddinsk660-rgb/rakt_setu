@@ -40,7 +40,11 @@ class UserNotifier extends StateNotifier<AppUser?> {
   }
 
   Future<void> refresh() async {
-    state = await _repository.getCurrentUser();
+    try {
+      state = await _repository.getMe();
+    } catch (e) {
+      state = await _repository.getCurrentUser();
+    }
   }
 
   void clear() {

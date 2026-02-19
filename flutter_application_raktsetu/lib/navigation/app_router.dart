@@ -27,6 +27,8 @@ import '../features/dashboard/roles/blood_stock_screen.dart';
 import '../features/dashboard/roles/hospital_request_screen.dart';
 import '../features/dashboard/roles/admin/approval_queue_screen.dart';
 import '../features/dashboard/roles/admin/user_management_screen.dart';
+import '../features/reimbursement/reimbursement_screen.dart';
+import '../features/reimbursement/reimbursement_approval_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -122,6 +124,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/users',
         builder: (context, state) => const UserManagementScreen(),
+      ),
+      GoRoute(
+        path: '/reimbursements',
+        builder: (context, state) => const ReimbursementScreen(),
+      ),
+      GoRoute(
+        path: '/reimbursement-approval',
+        builder: (context, state) => const ReimbursementApprovalScreen(),
       ),
     ],
     redirect: (context, state) async {

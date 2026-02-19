@@ -9,12 +9,11 @@ router.post('/', authenticate, reimbursementController.createReimbursement);
 // Get My Requests
 router.get('/my', authenticate, reimbursementController.getMyReimbursements);
 
-// Get Pending Requests (Admin/Manager only)
-// Assuming we have 'MANAGER' or using 'ADMIN' for simplicity now. 
-// Adding 'HELPLINE' temporarily or 'ADMIN' as allowed roles.
-router.get('/pending', authenticate, authorize(['ADMIN', 'HELPLINE']), reimbursementController.getPendingReimbursements);
+// Get Pending Requests (Admin/Manager/HR authorized)
+router.get('/pending', authenticate, authorize(['ADMIN', 'MANAGER', 'HR']), reimbursementController.getPendingReimbursements);
 
-// Approve/Reject (Admin/Manager)
-router.put('/:id/status', authenticate, authorize(['ADMIN', 'HELPLINE']), reimbursementController.updateStatus);
+// Approve/Reject (Admin/Manager/HR authorized)
+router.put('/:id/status', authenticate, authorize(['ADMIN', 'MANAGER', 'HR']), reimbursementController.updateStatus);
+
 
 module.exports = router;

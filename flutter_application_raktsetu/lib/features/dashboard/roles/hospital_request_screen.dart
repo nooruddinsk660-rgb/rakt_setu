@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/components/app_button.dart';
 import '../../../../shared/components/app_text_field.dart';
-import 'package:go_router/go_router.dart';
+import '../../auth/auth_provider.dart';
+import '../../helpline/helpline_provider.dart';
 
-class HospitalRequestScreen extends StatefulWidget {
+class HospitalRequestScreen extends ConsumerStatefulWidget {
   const HospitalRequestScreen({super.key});
 
   @override
-  State<HospitalRequestScreen> createState() => _HospitalRequestScreenState();
+  ConsumerState<HospitalRequestScreen> createState() =>
+      _HospitalRequestScreenState();
 }
 
-class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
+class _HospitalRequestScreenState extends ConsumerState<HospitalRequestScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _patientNameController = TextEditingController(); // Hospital specific
+  final _patientNameController = TextEditingController();
   final _unitsController = TextEditingController();
   final _ageController = TextEditingController();
   final _notesController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
 
   String? _selectedBloodGroup;
   String? _urgencyLevel;
@@ -32,19 +38,68 @@ class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
     'O-',
   ];
 
-  final List<String> _urgencyLevels = ['Critical', 'High', 'Moderate'];
+  final List<String> _urgencyLevels = ['Critical', 'Urgent', 'Normal'];
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill if user data is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(currentUserProvider);
+      if (user != null) {
+        _cityController.text = user.city ?? '';
+        _phoneController.text = user.phone ?? '';
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _patientNameController.dispose();
+    _unitsController.dispose();
+    _ageController.dispose();
+    _notesController.dispose();
+    _phoneController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submitRequest() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verified Request Posted!')),
-        );
-        context.pop();
+
+      try {
+        final user = ref.read(currentUserProvider);
+        final repository = ref.read(helplineRepositoryProvider);
+
+        await repository.createRequest({
+          'patientName': _patientNameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'bloodGroup': _selectedBloodGroup,
+          'unitsRequired': int.tryParse(_unitsController.text) ?? 1,
+          'hospital': user?.name ?? 'Assigned Hospital',
+          'city': _cityController.text.trim(),
+          'urgencyLevel': _urgencyLevel,
+          'notes':
+              'Age: ${_ageController.text}. ${_notesController.text.trim()}',
+        });
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Verified Request Posted!')),
+          );
+          ref.invalidate(helplineRequestsProvider);
+          ref.invalidate(myRequestsProvider);
+          context.pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to post request: $e')));
+        }
       }
     }
   }
@@ -81,7 +136,6 @@ class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
               AppTextField(
                 controller: _patientNameController,
                 label: 'Patient Name',
@@ -90,7 +144,15 @@ class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
                 validator: (v) => v!.isEmpty ? 'Enter patient name' : null,
               ),
               const SizedBox(height: 16),
-
+              AppTextField(
+                controller: _phoneController,
+                label: 'Contact Phone',
+                hint: 'Enter phone number',
+                keyboardType: TextInputType.phone,
+                prefixIcon: Icons.phone,
+                validator: (v) => v!.isEmpty ? 'Enter phone number' : null,
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -127,7 +189,6 @@ class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
               Row(
                 children: [
                   Expanded(
@@ -163,7 +224,14 @@ class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
+              AppTextField(
+                controller: _cityController,
+                label: 'City',
+                hint: 'Enter city',
+                prefixIcon: Icons.location_city,
+                validator: (v) => v!.isEmpty ? 'Enter city' : null,
+              ),
+              const SizedBox(height: 16),
               AppTextField(
                 controller: _notesController,
                 label: 'Medical Notes (Optional)',
@@ -172,11 +240,11 @@ class _HospitalRequestScreenState extends State<HospitalRequestScreen> {
                 maxLines: 3,
               ),
               const SizedBox(height: 32),
-
               AppButton(
                 text: 'Post Request',
                 onPressed: _isLoading ? null : _submitRequest,
                 isLoading: _isLoading,
+                color: Colors.red,
               ),
             ],
           ),

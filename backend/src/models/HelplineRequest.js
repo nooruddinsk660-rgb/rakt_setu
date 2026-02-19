@@ -16,6 +16,10 @@ const helplineRequestSchema = new mongoose.Schema({
         required: true,
         min: 1
     },
+    phone: {
+        type: String,
+        required: true
+    },
     hospital: {
         type: String,
         required: true

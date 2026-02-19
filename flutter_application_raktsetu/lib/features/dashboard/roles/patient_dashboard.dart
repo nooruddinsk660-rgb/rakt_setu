@@ -5,6 +5,7 @@ import '../../../shared/providers/theme_provider.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/app_drawer.dart';
 import 'tabs/patient_home_tab.dart';
+import 'tabs/requests_list_tab.dart';
 
 class PatientDashboard extends ConsumerStatefulWidget {
   const PatientDashboard({super.key});
@@ -19,7 +20,7 @@ class _PatientDashboardState extends ConsumerState<PatientDashboard> {
   final List<Widget> _tabs = [
     const PatientHomeTab(),
     const Center(child: Text('Donors Search - Coming Soon')),
-    const Center(child: Text('Request History - Coming Soon')),
+    const RequestsListTab(),
   ];
 
   @override

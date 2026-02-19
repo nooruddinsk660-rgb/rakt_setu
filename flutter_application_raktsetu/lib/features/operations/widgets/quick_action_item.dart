@@ -52,7 +52,7 @@ class QuickActionItem extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.grey,
+              color: theme.hintColor,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),

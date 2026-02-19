@@ -6,6 +6,7 @@ import '../widgets/dashboard_header.dart';
 import '../widgets/app_drawer.dart';
 import 'tabs/donor_home_tab.dart';
 import 'tabs/donor_history_tab.dart';
+import 'tabs/requests_list_tab.dart';
 
 class DonorDashboard extends ConsumerStatefulWidget {
   const DonorDashboard({super.key});
@@ -17,10 +18,10 @@ class DonorDashboard extends ConsumerStatefulWidget {
 class _DonorDashboardState extends ConsumerState<DonorDashboard> {
   int _selectedIndex = 0;
 
-  final List<Widget> _tabs = const [
-    DonorHomeTab(),
-    DonorHistoryTab(),
-    Center(child: Text('Map View - Coming Soon')), // Placeholder for Nearby
+  final List<Widget> _tabs = [
+    const DonorHomeTab(),
+    const DonorHistoryTab(),
+    const RequestsListTab(onlyMyRequests: false),
   ];
 
   @override
@@ -60,7 +61,10 @@ class _DonorDashboardState extends ConsumerState<DonorDashboard> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.history), label: 'History'),
-          NavigationDestination(icon: Icon(Icons.map), label: 'Nearby'),
+          NavigationDestination(
+            icon: Icon(Icons.assignment),
+            label: 'Requests',
+          ),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
